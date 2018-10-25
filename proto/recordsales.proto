@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package recordsales;
+
+message Sale {
+  int32 instance_id = 1;
+  int64 last_update_time = 2;
+}
+
+message Config {
+  repeated Sale sales = 1;
+}
