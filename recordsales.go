@@ -89,5 +89,6 @@ func main() {
 	server.PrepServer()
 	server.Register = server
 	server.RegisterServer("recordsales", false)
+	server.Log("Starting up!")
 	fmt.Printf("%v", server.Serve())
 }
