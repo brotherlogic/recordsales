@@ -5,13 +5,44 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strconv"
 
 	"github.com/brotherlogic/goserver"
-	pbg "github.com/brotherlogic/goserver/proto"
-	pb "github.com/brotherlogic/recordsales/proto"
+	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+
+	pbgd "github.com/brotherlogic/godiscogs"
+	pbg "github.com/brotherlogic/goserver/proto"
+	pbrc "github.com/brotherlogic/recordcollection/proto"
+	pb "github.com/brotherlogic/recordsales/proto"
 )
+
+type getter interface {
+	getRecords(ctx context.Context) ([]*pbrc.Record, error)
+}
+
+type prodGetter struct{}
+
+func (p prodGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
+	ip, port, err := utils.Resolve("recordcollection")
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Metadata: &pbrc.ReleaseMetadata{}, Release: &pbgd.Release{}}}, grpc.MaxCallRecvMsgSize(1024*1024*1024))
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetRecords(), nil
+}
 
 const (
 	// KEY - where we store sale info
@@ -22,6 +53,7 @@ const (
 type Server struct {
 	*goserver.GoServer
 	config *pb.Config
+	getter getter
 }
 
 // Init builds the server
@@ -29,6 +61,7 @@ func Init() *Server {
 	s := &Server{
 		&goserver.GoServer{},
 		&pb.Config{},
+		prodGetter{},
 	}
 	return s
 }
