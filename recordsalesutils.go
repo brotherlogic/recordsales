@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"golang.org/x/net/context"
@@ -28,6 +29,14 @@ func (s *Server) syncSales(ctx context.Context) {
 			if !found {
 				s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 			}
+		}
+	}
+}
+
+func (s *Server) updateSales(ctx context.Context) {
+	for _, sale := range s.config.Sales {
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 { //one week
+			s.RaiseIssue(ctx, "Updating Sale Price", fmt.Sprintf("Updating price of %v", sale.InstanceId), false)
 		}
 	}
 }

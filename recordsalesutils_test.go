@@ -76,3 +76,13 @@ func TestSyncSalesWithGetFail(t *testing.T) {
 		t.Errorf("Sales have synced somehow: %v", s.config)
 	}
 }
+
+func TestUpateSales(t *testing.T) {
+	s := getTestServer()
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
+	s.updateSales(context.Background())
+
+	if s.config.Sales[0].LastUpdateTime != 12 {
+		t.Errorf("This test needs updating")
+	}
+}

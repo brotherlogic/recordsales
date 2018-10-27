@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/brotherlogic/goserver"
 	"github.com/brotherlogic/goserver/utils"
@@ -122,6 +123,10 @@ func main() {
 	server.PrepServer()
 	server.Register = server
 	server.RegisterServer("recordsales", false)
+
+	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Hour)
+	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Hour)
+
 	server.Log("Starting up!")
 	fmt.Printf("%v", server.Serve())
 }
