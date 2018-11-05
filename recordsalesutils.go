@@ -13,6 +13,7 @@ func (s *Server) syncSales(ctx context.Context) {
 	records, err := s.getter.getRecords(ctx)
 
 	if err != nil {
+		s.Log(fmt.Sprintf("Get error: %v", err))
 		return
 	}
 
@@ -31,6 +32,8 @@ func (s *Server) syncSales(ctx context.Context) {
 			}
 		}
 	}
+
+	s.save(ctx)
 }
 
 func (s *Server) updateSales(ctx context.Context) {
