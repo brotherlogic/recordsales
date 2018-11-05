@@ -54,8 +54,9 @@ const (
 //Server main server type
 type Server struct {
 	*goserver.GoServer
-	config *pb.Config
-	getter getter
+	config  *pb.Config
+	getter  getter
+	updates int64
 }
 
 // Init builds the server
@@ -64,6 +65,7 @@ func Init() *Server {
 		&goserver.GoServer{},
 		&pb.Config{},
 		prodGetter{},
+		int64(0),
 	}
 	return s
 }
@@ -108,6 +110,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 func (s *Server) GetState() []*pbg.State {
 	return []*pbg.State{
 		&pbg.State{Key: "active_sales", Value: int64(len(s.config.Sales))},
+		&pbg.State{Key: "updates", Value: s.updates},
 	}
 }
 
@@ -127,7 +130,7 @@ func main() {
 	server.RegisterServer("recordsales", false)
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Hour)
-	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Hour)
+	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
 
 	server.Log("Starting up!")
 	fmt.Printf("%v", server.Serve())
