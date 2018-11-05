@@ -28,6 +28,7 @@ func (s *Server) syncSales(ctx context.Context) {
 			}
 
 			if !found {
+				s.Log(fmt.Sprintf("Not found - adding %v", rec.GetRelease().Title))
 				s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 			}
 		}
@@ -39,7 +40,6 @@ func (s *Server) syncSales(ctx context.Context) {
 func (s *Server) updateSales(ctx context.Context) {
 	s.updates++
 	for _, sale := range s.config.Sales {
-		s.Log(fmt.Sprintf("Last update %v", time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24 { //one week
 			s.RaiseIssue(ctx, "Updating Sale Price", fmt.Sprintf("Updating price of %v", sale.InstanceId), false)
 		}
