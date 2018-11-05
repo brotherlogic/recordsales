@@ -40,6 +40,7 @@ func (s *Server) syncSales(ctx context.Context) {
 func (s *Server) updateSales(ctx context.Context) {
 	s.updates++
 	for _, sale := range s.config.Sales {
+		s.Log(fmt.Sprintf("DELAY %v", time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Minute*30 { //one week
 			s.RaiseIssue(ctx, "Updating Sale Price", fmt.Sprintf("Updating price of %v", sale.InstanceId), false)
 		}
