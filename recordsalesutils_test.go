@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 
 	pbgd "github.com/brotherlogic/godiscogs"
@@ -26,6 +27,7 @@ func (t *testGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
 func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
+	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 
 	return s
 }
@@ -82,7 +84,7 @@ func TestUpateSales(t *testing.T) {
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
 	s.updateSales(context.Background())
 
-	if s.config.Sales[0].LastUpdateTime != 12 {
-		t.Errorf("This test needs updating")
+	if s.config.Sales[0].LastUpdateTime == 12 {
+		t.Errorf("This test needs updating: %v", s.config)
 	}
 }

@@ -23,6 +23,9 @@ func (s *Server) syncSales(ctx context.Context) {
 			for _, s := range s.config.Sales {
 				if s.InstanceId == rec.GetRelease().InstanceId {
 					found = true
+					if !rec.GetMetadata().SaleDirty {
+						s.Price = rec.GetMetadata().SalePrice
+					}
 					break
 				}
 			}
