@@ -108,9 +108,14 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
+	sum := int32(0)
+	for _, s := range s.config.Sales {
+		sum += s.Price
+	}
 	return []*pbg.State{
 		&pbg.State{Key: "active_sales", Value: int64(len(s.config.Sales))},
 		&pbg.State{Key: "updates", Value: s.updates},
+		&pbg.State{Key: "sum_sales", Value: int64(sum)},
 	}
 }
 
