@@ -45,7 +45,8 @@ func (s *Server) updateSales(ctx context.Context) {
 	for _, sale := range s.config.Sales {
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Minute*30 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
-			s.RaiseIssue(ctx, "Updating Sale Price", fmt.Sprintf("Updating price of %v (Currently %v)", sale.InstanceId, sale.Price), false)
+			newPrice := sale.Price - 200
+			s.RaiseIssue(ctx, "Updating Sale Price", fmt.Sprintf("Updating price of %v -> %v (Currently %v)", sale.InstanceId, newPrice, sale.Price), false)
 		}
 	}
 	s.save(ctx)
