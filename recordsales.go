@@ -22,9 +22,28 @@ import (
 
 type getter interface {
 	getRecords(ctx context.Context) ([]*pbrc.Record, error)
+	updatePrice(ctx context.Context, instanceID, price int32) error
 }
 
 type prodGetter struct{}
+
+func (p prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
+	ip, port, err := utils.Resolve("recordcollection")
+	if err != nil {
+		return err
+	}
+
+	conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{SalePrice: price}}}
+	_, err = client.UpdateRecord(ctx, update)
+	return err
+}
 
 func (p prodGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
 	ip, port, err := utils.Resolve("recordcollection")
