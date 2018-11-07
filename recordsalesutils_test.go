@@ -24,6 +24,10 @@ func (t *testGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
 	return t.records, nil
 }
 
+func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
+	return nil
+}
+
 func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
