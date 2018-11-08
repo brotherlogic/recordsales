@@ -49,6 +49,7 @@ func (s *Server) updateSales(ctx context.Context) {
 			if newPrice < 500 {
 				newPrice = 500
 			}
+			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
 			s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
 		}
 	}
