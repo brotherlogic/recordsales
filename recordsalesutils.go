@@ -43,9 +43,9 @@ func (s *Server) syncSales(ctx context.Context) {
 func (s *Server) updateSales(ctx context.Context) {
 	s.updates++
 	for _, sale := range s.config.Sales {
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24 { //two days
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
-			newPrice := sale.Price - 100
+			newPrice := sale.Price - 200
 			if newPrice < 500 {
 				newPrice = 500
 			}
