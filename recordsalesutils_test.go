@@ -73,6 +73,19 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 	}
 }
 
+func TestSyncSalesWithArchive(t *testing.T) {
+	s := getTestServer()
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 200})
+	s.config.Archives = append(s.config.Archives, &pb.Sale{InstanceId: 12, Price: 200})
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 12}}}}
+
+	s.syncSales(context.Background())
+
+	if len(s.config.Archives) != 1 {
+		t.Errorf("Too much archive: %v", s.config.Archives)
+	}
+}
+
 func TestSyncSalesWithGetFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
