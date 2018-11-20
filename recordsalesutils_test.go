@@ -12,6 +12,14 @@ import (
 	pb "github.com/brotherlogic/recordsales/proto"
 )
 
+func TestTrim(t *testing.T) {
+	s := getTestServer()
+	nlist := s.trimList(context.Background(), []*pb.Sale{&pb.Sale{InstanceId: 123, Price: 2020}, &pb.Sale{InstanceId: 124, Price: 20}, &pb.Sale{InstanceId: 124, Price: 20}, &pb.Sale{InstanceId: 123, Price: 20}})
+	if len(nlist) != 3 {
+		t.Errorf("Trim Error: %v", nlist)
+	}
+}
+
 type testGetter struct {
 	records []*pbrc.Record
 	fail    bool
