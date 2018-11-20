@@ -127,6 +127,12 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 
 // GetState gets the state of the server
 func (s *Server) GetState() []*pbg.State {
+	vals := ""
+	for _, a := range s.config.Archives {
+		if a.InstanceId == 19867404 {
+			vals += fmt.Sprintf("%v,", a.Price)
+		}
+	}
 	sum := int32(0)
 	for _, s := range s.config.Sales {
 		sum += s.Price
@@ -138,6 +144,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "last_update", TimeValue: int64(s.config.Sales[0].LastUpdateTime)},
 		&pbg.State{Key: "last_price", Value: int64(s.config.Sales[0].Price)},
 		&pbg.State{Key: "archive_sales", Value: int64(len(s.config.Archives))},
+		&pbg.State{Key: "tracker", Text: vals},
 	}
 }
 
