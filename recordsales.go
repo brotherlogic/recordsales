@@ -110,15 +110,16 @@ func (s *Server) load(ctx context.Context) error {
 		add := false
 		if _, ok := seen[a.InstanceId]; ok {
 			if _, ok2 := seen[a.InstanceId][a.Price]; !ok2 {
-				add = false
+				add = true
 			}
 		} else {
 			add = true
 		}
 
 		if add {
-			s.RaiseIssue(ctx, "Trim Needed", "Need to trim archives", false)
 			narch = append(narch, a)
+		} else {
+			s.RaiseIssue(ctx, "Trim Needed", "Need to trim archives", false)
 		}
 	}
 	s.config.Archives = narch
