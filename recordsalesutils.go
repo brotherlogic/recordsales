@@ -20,11 +20,17 @@ func (s *Server) syncSales(ctx context.Context) {
 	for _, rec := range records {
 		if rec.GetMetadata().SaleId > 0 {
 			found := false
-			for _, s := range s.config.Sales {
-				if s.InstanceId == rec.GetRelease().InstanceId {
+			for _, sale := range s.config.Sales {
+				if sale.InstanceId == rec.GetRelease().InstanceId {
 					found = true
 					if !rec.GetMetadata().SaleDirty {
-						s.Price = rec.GetMetadata().SalePrice
+						oldSale := &pb.Sale{
+							InstanceId:     sale.InstanceId,
+							LastUpdateTime: sale.LastUpdateTime,
+							Price:          sale.Price,
+						}
+						s.config.Archives = append(s.config.Archives, oldSale)
+						sale.Price = rec.GetMetadata().SalePrice
 					}
 					break
 				}
