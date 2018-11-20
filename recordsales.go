@@ -137,6 +137,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "sum_sales", Value: int64(sum)},
 		&pbg.State{Key: "last_update", TimeValue: int64(s.config.Sales[0].LastUpdateTime)},
 		&pbg.State{Key: "last_price", Value: int64(s.config.Sales[0].Price)},
+		&pbg.State{Key: "archive_sales", Value: int64(len(s.config.Archives))},
 	}
 }
 

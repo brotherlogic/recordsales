@@ -10,4 +10,5 @@ message Sale {
 
 message Config {
   repeated Sale sales = 1;
+  repeated Sale archives = 2;
 }
