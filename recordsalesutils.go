@@ -9,6 +9,32 @@ import (
 	pb "github.com/brotherlogic/recordsales/proto"
 )
 
+func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
+	// Trim out excess
+	seen := make(map[int32]map[int32]bool)
+	narch := []*pb.Sale{}
+	for _, a := range in {
+		add := false
+		if _, ok := seen[a.InstanceId]; ok {
+			if _, ok2 := seen[a.InstanceId][a.Price]; !ok2 {
+				add = true
+				seen[a.InstanceId][a.Price] = true
+			}
+		} else {
+			seen[a.InstanceId] = make(map[int32]bool)
+			seen[a.InstanceId][a.Price] = true
+			add = true
+		}
+
+		if add {
+			narch = append(narch, a)
+		} else {
+			s.RaiseIssue(ctx, "Trim Needed", "Need to trim archives", false)
+		}
+	}
+	return narch
+}
+
 func (s *Server) syncSales(ctx context.Context) {
 	records, err := s.getter.getRecords(ctx)
 
