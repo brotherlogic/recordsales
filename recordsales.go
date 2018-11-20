@@ -102,6 +102,27 @@ func (s *Server) load(ctx context.Context) error {
 	}
 
 	s.config = data.(*pb.Config)
+
+	// Trim out excess
+	seen := make(map[int32]map[int32]bool)
+	narch := []*pb.Sale{}
+	for _, a := range s.config.Archives {
+		add := false
+		if _, ok := seen[a.InstanceId]; ok {
+			if _, ok2 := seen[a.InstanceId][a.Price]; !ok2 {
+				add = false
+			}
+		} else {
+			add = true
+		}
+
+		if add {
+			s.RaiseIssue(ctx, "Trim Needed", "Need to trim archives", false)
+			narch = append(narch, a)
+		}
+	}
+	s.config.Archives = narch
+
 	return nil
 }
 
