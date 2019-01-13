@@ -140,6 +140,7 @@ func (s *Server) GetState() []*pbg.State {
 	}
 	return []*pbg.State{
 		&pbg.State{Key: "active_sales", Value: int64(len(s.config.Sales))},
+		&pbg.State{Key: "archive_sales", Value: int64(len(s.config.Archives))},
 		&pbg.State{Key: "updates", Value: s.updates},
 		&pbg.State{Key: "sum_sales", Value: int64(sum)},
 		&pbg.State{Key: "archive_sales", Value: int64(len(s.config.Archives))},
