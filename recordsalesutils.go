@@ -6,6 +6,7 @@ import (
 
 	"golang.org/x/net/context"
 
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
 )
 
@@ -65,6 +66,7 @@ func (s *Server) syncSales(ctx context.Context) {
 							s.config.Archives = append(s.config.Archives, oldSale)
 						}
 						sale.Price = rec.GetMetadata().SalePrice
+
 					}
 					break
 				}
@@ -74,6 +76,16 @@ func (s *Server) syncSales(ctx context.Context) {
 				s.Log(fmt.Sprintf("Not found - adding %v", rec.GetRelease().Title))
 				s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 			}
+
+			//Remove record if it's sold
+			if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL {
+				for i := range s.config.Sales {
+					if s.config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
+						s.config.Sales = append(s.config.Sales[:i], s.config.Sales[i+1:]...)
+					}
+				}
+			}
+
 		}
 	}
 

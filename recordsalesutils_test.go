@@ -46,7 +46,7 @@ func getTestServer() *Server {
 
 func TestSyncSales(t *testing.T) {
 	s := getTestServer()
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 12}}}}
 
 	s.syncSales(context.Background())
 
@@ -65,7 +65,7 @@ func TestSyncSales(t *testing.T) {
 func TestSyncSalesWithCacheHit(t *testing.T) {
 	s := getTestServer()
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 12}}}}
 
 	s.syncSales(context.Background())
 
@@ -111,5 +111,17 @@ func TestUpateSales(t *testing.T) {
 
 	if s.config.Sales[0].LastUpdateTime == 12 {
 		t.Errorf("This test needs updating: %v", s.config)
+	}
+}
+
+func TestRemoveRecordOnceSold(t *testing.T) {
+	s := getTestServer()
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{Category: pbrc.ReleaseMetadata_SOLD_ARCHIVE, SaleId: 12345}}}}
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 1})
+
+	s.syncSales(context.Background())
+
+	if len(s.config.Sales) != 0 && len(s.config.Archives) != 1 {
+		t.Errorf("Record sold has not been removed and added to archive")
 	}
 }
