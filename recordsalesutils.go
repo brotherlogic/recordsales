@@ -79,10 +79,12 @@ func (s *Server) syncSales(ctx context.Context) {
 
 			//Remove record if it's sold
 			if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL {
-				for i := range s.config.Sales {
+				i := 0
+				for i < len(s.config.Sales) {
 					if s.config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
 						s.config.Sales = append(s.config.Sales[:i], s.config.Sales[i+1:]...)
 					}
+					i++
 				}
 			}
 
