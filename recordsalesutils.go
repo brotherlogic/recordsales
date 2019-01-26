@@ -99,7 +99,7 @@ func (s *Server) updateSales(ctx context.Context) {
 	for _, sale := range s.config.Sales {
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
-			newPrice := sale.Price - 200
+			newPrice := sale.Price - 500
 			if newPrice < 500 {
 				newPrice = 500
 			}
