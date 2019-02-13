@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/brotherlogic/goserver"
-	"github.com/brotherlogic/goserver/utils"
 	"github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,15 +23,12 @@ type getter interface {
 	updatePrice(ctx context.Context, instanceID, price int32) error
 }
 
-type prodGetter struct{}
+type prodGetter struct {
+	dial func(server string) (*grpc.ClientConn, error)
+}
 
 func (p prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
-	ip, port, err := utils.Resolve("recordcollection")
-	if err != nil {
-		return err
-	}
-
-	conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	conn, err := p.dial("recordcollection")
 	if err != nil {
 		return err
 	}
@@ -46,12 +41,7 @@ func (p prodGetter) updatePrice(ctx context.Context, instanceID, price int32) er
 }
 
 func (p prodGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
-	ip, port, err := utils.Resolve("recordcollection")
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := grpc.Dial(ip+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	conn, err := p.dial("recordcollection")
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +76,7 @@ func Init() *Server {
 		prodGetter{},
 		int64(0),
 	}
+	s.getter = prodGetter{s.DialMaster}
 	return s
 }
 
@@ -116,6 +107,12 @@ func (s *Server) ReportHealth() bool {
 	return true
 }
 
+// Shutdown the server
+func (s *Server) Shutdown(ctx context.Context) error {
+	s.save(ctx)
+	return nil
+}
+
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
 	if master {
@@ -130,8 +127,8 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 func (s *Server) GetState() []*pbg.State {
 	vals := ""
 	for _, a := range s.config.Archives {
-		if a.InstanceId == 19867404 {
-			vals += fmt.Sprintf("%v,", a.Price)
+		if a.InstanceId == 311057904 {
+			vals += fmt.Sprintf("%v [%v],", a.Price, a.LastUpdateTime)
 		}
 	}
 	sum := int32(0)
