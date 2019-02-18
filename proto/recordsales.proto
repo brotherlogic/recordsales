@@ -12,3 +12,13 @@ message Config {
   repeated Sale sales = 1;
   repeated Sale archives = 2;
 }
+
+message GetStaleRequest {}
+
+message GetStaleResponse {
+  repeated Sale stale_sales = 1;
+}
+
+service SaleService {
+  rpc GetStale(GetStaleRequest) returns (GetStaleResponse) {};
+}

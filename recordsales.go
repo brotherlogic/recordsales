@@ -99,7 +99,7 @@ func (s *Server) load(ctx context.Context) error {
 
 // DoRegister does RPC registration
 func (s *Server) DoRegister(server *grpc.Server) {
-	// Do nothing
+	pb.RegisterSaleServiceServer(server, s)
 }
 
 // ReportHealth alerts if we're not healthy
