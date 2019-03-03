@@ -21,10 +21,23 @@ import (
 type getter interface {
 	getRecords(ctx context.Context) ([]*pbrc.Record, error)
 	updatePrice(ctx context.Context, instanceID, price int32) error
+	updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category)
 }
 
 type prodGetter struct {
 	dial func(server string) (*grpc.ClientConn, error)
+}
+
+func (p prodGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
+	conn, err := p.dial("recordcollection")
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{Category: category}}}
+	client.UpdateRecord(ctx, update)
 }
 
 func (p prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {

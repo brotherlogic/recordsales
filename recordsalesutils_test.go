@@ -36,6 +36,9 @@ func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 	return nil
 }
 
+func (t *testGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
+}
+
 func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
