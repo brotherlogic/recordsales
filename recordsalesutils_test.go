@@ -117,6 +117,16 @@ func TestUpateSales(t *testing.T) {
 	}
 }
 
+func TestUpateSalesWithStale(t *testing.T) {
+	s := getTestServer()
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 500})
+	s.updateSales(context.Background())
+
+	if s.config.Sales[0].LastUpdateTime != 12 {
+		t.Errorf("This test needs updating: %v", s.config)
+	}
+}
+
 func TestRemoveRecordOnceSold(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{Category: pbrc.ReleaseMetadata_SOLD_ARCHIVE, SaleId: 12345}}}}
