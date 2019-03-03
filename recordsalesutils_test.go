@@ -36,6 +36,9 @@ func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 	return nil
 }
 
+func (t *testGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
+}
+
 func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
@@ -110,6 +113,16 @@ func TestUpateSales(t *testing.T) {
 	s.updateSales(context.Background())
 
 	if s.config.Sales[0].LastUpdateTime == 12 {
+		t.Errorf("This test needs updating: %v", s.config)
+	}
+}
+
+func TestUpateSalesWithStale(t *testing.T) {
+	s := getTestServer()
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 500})
+	s.updateSales(context.Background())
+
+	if s.config.Sales[0].LastUpdateTime != 12 {
 		t.Errorf("This test needs updating: %v", s.config)
 	}
 }
