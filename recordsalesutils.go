@@ -36,12 +36,12 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 	return narch
 }
 
-func (s *Server) syncSales(ctx context.Context) {
+func (s *Server) syncSales(ctx context.Context) error {
 	records, err := s.getter.getRecords(ctx)
 
 	if err != nil {
 		s.Log(fmt.Sprintf("Get error: %v", err))
-		return
+		return err
 	}
 
 	for _, rec := range records {
@@ -92,9 +92,10 @@ func (s *Server) syncSales(ctx context.Context) {
 	}
 
 	s.save(ctx)
+	return nil
 }
 
-func (s *Server) updateSales(ctx context.Context) {
+func (s *Server) updateSales(ctx context.Context) error {
 	s.updates++
 	for _, sale := range s.config.Sales {
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price != 500 { //one week
@@ -110,4 +111,5 @@ func (s *Server) updateSales(ctx context.Context) {
 		}
 	}
 	s.save(ctx)
+	return nil
 }
