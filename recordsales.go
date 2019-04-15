@@ -174,7 +174,7 @@ func main() {
 	server.RegisterServer("recordsales", false)
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
-	//server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
+	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
 
 	server.Log("Starting up!")
 	fmt.Printf("%v", server.Serve())
