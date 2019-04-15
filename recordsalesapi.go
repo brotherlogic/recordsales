@@ -18,3 +18,15 @@ func (s *Server) GetStale(ctx context.Context, req *pb.GetStaleRequest) (*pb.Get
 
 	return &pb.GetStaleResponse{StaleSales: resp}, nil
 }
+
+// GetSaleState gets the state of a sale
+func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
+	resp := []*pb.Sale{}
+	for _, sale := range s.config.Sales {
+		if sale.InstanceId == req.InstanceId {
+			resp = append(resp, sale)
+		}
+	}
+
+	return &pb.GetStateResponse{Sales: resp}, nil
+}

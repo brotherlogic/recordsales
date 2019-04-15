@@ -19,6 +19,15 @@ message GetStaleResponse {
   repeated Sale stale_sales = 1;
 }
 
+message GetStateRequest {
+  int32 instance_id = 1;
+}
+
+message GetStateResponse {
+  repeated Sale sales = 1;
+}
+
 service SaleService {
   rpc GetStale(GetStaleRequest) returns (GetStaleResponse) {};
+  rpc GetSaleState(GetStateRequest) returns (GetStateResponse) {};
 }
