@@ -140,7 +140,7 @@ func (s *Server) Mote(ctx context.Context, master bool) error {
 func (s *Server) GetState() []*pbg.State {
 	vals := ""
 	for _, a := range s.config.Archives {
-		if a.InstanceId == 261231889 {
+		if a.InstanceId == 19867798 {
 			vals += fmt.Sprintf("%v [%v],", a.Price, a.LastUpdateTime)
 		}
 	}
