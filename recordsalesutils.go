@@ -101,8 +101,8 @@ func (s *Server) updateSales(ctx context.Context) error {
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price != 500 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
-			if newPrice < 500 {
-				newPrice = 500
+			if newPrice < 499 {
+				newPrice = 499
 			}
 			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
 			s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
