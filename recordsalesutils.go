@@ -106,7 +106,7 @@ func (s *Server) updateSales(ctx context.Context) error {
 			}
 			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
 			s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 500 {
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 500 && sale.Category != pbrc.ReleaseMetadata_STALE_SALE {
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 		}
 	}
