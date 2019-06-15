@@ -78,7 +78,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 			}
 
 			//Remove record if it's sold
-			if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL {
+			if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
 				i := 0
 				for i < len(s.config.Sales) {
 					if s.config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
@@ -106,7 +106,7 @@ func (s *Server) updateSales(ctx context.Context) error {
 			}
 			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
 			s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 500 {
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 499 {
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 		}
 	}
