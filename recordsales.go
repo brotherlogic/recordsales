@@ -145,8 +145,12 @@ func (s *Server) GetState() []*pbg.State {
 		}
 	}
 	sum := int32(0)
+	pr := int32(0)
 	for _, s := range s.config.Sales {
 		sum += s.Price
+		if s.InstanceId == 330510403 {
+			pr += s.Price
+		}
 	}
 	return []*pbg.State{
 		&pbg.State{Key: "active_sales", Value: int64(len(s.config.Sales))},
@@ -155,6 +159,7 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "sum_sales", Value: int64(sum)},
 		&pbg.State{Key: "tracker", Text: vals},
 		&pbg.State{Key: "test", Text: "testing123"},
+		&pbg.State{Key: "trac", Value: int64(pr)},
 	}
 }
 
