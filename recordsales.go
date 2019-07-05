@@ -128,6 +128,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
+	return fmt.Errorf("No mote for me")
 	if master {
 		err := s.load(ctx)
 		return err

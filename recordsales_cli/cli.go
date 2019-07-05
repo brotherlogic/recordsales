@@ -70,11 +70,12 @@ func main() {
 			fmt.Printf("%v. %v\n", i, rec.GetRelease().Title)
 		}
 	case "get":
-		val, _ := strconv.Atoi(os.Args[1])
+		val, _ := strconv.Atoi(os.Args[2])
 		res, err := client.GetSaleState(ctx, &pb.GetStateRequest{InstanceId: int32(val)})
 		if err != nil {
 			log.Fatalf("Cannot get: %v", err)
 		}
+		log.Printf("OUT %v", res)
 		if len(res.GetSales()) == 0 {
 			fmt.Printf("No sales found!\n")
 		}
