@@ -75,7 +75,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("Cannot get: %v", err)
 		}
-		log.Printf("OUT %v", res)
 		if len(res.GetSales()) == 0 {
 			fmt.Printf("No sales found!\n")
 		}
