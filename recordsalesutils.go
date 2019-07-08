@@ -47,9 +47,6 @@ func (s *Server) syncSales(ctx context.Context) error {
 	for _, rec := range records {
 		if rec.GetMetadata().SaleId > 0 {
 			found := false
-			if rec.GetMetadata().SaleId == 896759329 {
-				s.Log(fmt.Sprintf("Found %v", rec.GetMetadata()))
-			}
 			for _, sale := range s.config.Sales {
 				if sale.InstanceId == rec.GetRelease().InstanceId {
 					found = true
@@ -75,19 +72,12 @@ func (s *Server) syncSales(ctx context.Context) error {
 				}
 			}
 
-			if rec.GetMetadata().SaleId == 896759329 {
-				s.Log(fmt.Sprintf("PROC %v", found))
-			}
-
 			if !found {
 				s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 			}
 
 			//Remove record if it's sold
 			if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
-				if rec.GetMetadata().SaleId == 896759329 {
-					s.Log(fmt.Sprintf("Removing record: %v", rec.GetMetadata().Category))
-				}
 				i := 0
 				for i < len(s.config.Sales) {
 					if s.config.Sales[i].InstanceId == rec.GetRelease().InstanceId {

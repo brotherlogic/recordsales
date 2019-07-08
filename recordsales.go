@@ -128,7 +128,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
-	return fmt.Errorf("No mote for me")
 	if master {
 		err := s.load(ctx)
 		return err
@@ -180,7 +179,7 @@ func main() {
 	server.RegisterServer("recordsales", false)
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
-	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
+	//server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
 
 	server.Log("Starting up!")
 	fmt.Printf("%v", server.Serve())
