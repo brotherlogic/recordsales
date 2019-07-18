@@ -181,14 +181,14 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 	server := Init()
-	server.GoServer.KSclient = *keystoreclient.GetClient(server.GetIP)
+	server.GoServer.KSclient = *keystoreclient.GetClient(server.DialMaster)
 	server.PrepServer()
 	server.Register = server
 	server.RegisterServer("recordsales", false)
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
 	server.RegisterRepeatingTask(server.checkSaleTime, "check_sale_time", time.Hour)
-	//server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
+	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
 
 	server.Log("Starting up!")
 	fmt.Printf("%v", server.Serve())
