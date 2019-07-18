@@ -153,6 +153,7 @@ func (s *Server) GetState() []*pbg.State {
 		}
 	}
 	return []*pbg.State{
+		&pbg.State{Key: "last_sale_run", TimeValue: s.config.LastSaleRun},
 		&pbg.State{Key: "active_sales", Value: int64(len(s.config.Sales))},
 		&pbg.State{Key: "archive_sales", Value: int64(len(s.config.Archives))},
 		&pbg.State{Key: "updates", Value: s.updates},
@@ -161,6 +162,13 @@ func (s *Server) GetState() []*pbg.State {
 		&pbg.State{Key: "test", Text: "testing123"},
 		&pbg.State{Key: "trac", Value: int64(pr)},
 	}
+}
+
+func (s *Server) checkSaleTime(ctx context.Context) error {
+	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Hour*24*7 {
+		s.RaiseIssue(ctx, "Sale Problem", fmt.Sprintf("Last sale run was %v", time.Unix(s.config.LastSaleRun, 0)), false)
+	}
+	return nil
 }
 
 func main() {
@@ -179,6 +187,7 @@ func main() {
 	server.RegisterServer("recordsales", false)
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
+	server.RegisterRepeatingTask(server.checkSaleTime, "check_sale_time", time.Hour)
 	//server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute)
 
 	server.Log("Starting up!")

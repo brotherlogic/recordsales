@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
@@ -33,6 +34,9 @@ func (t *testGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
 }
 
 func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
+	if t.fail {
+		return fmt.Errorf("Built to fail")
+	}
 	return nil
 }
 
@@ -43,6 +47,7 @@ func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
+	s.getter = &testGetter{}
 
 	return s
 }
@@ -107,17 +112,34 @@ func TestSyncSalesWithGetFail(t *testing.T) {
 	}
 }
 
-func TestUpateSales(t *testing.T) {
+func TestUpdateSalesWithFail(t *testing.T) {
+	s := getTestServer()
+	s.getter = &testGetter{fail: true}
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
+	err := s.updateSales(context.Background())
+	if err == nil {
+		t.Errorf("Update did not fail")
+	}
+}
+
+func TestUpdateSales(t *testing.T) {
 	s := getTestServer()
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
-	s.updateSales(context.Background())
+	err := s.updateSales(context.Background())
+	if err != nil {
+		t.Errorf("Update failed: %v", err)
+	}
 
 	if s.config.Sales[0].LastUpdateTime == 12 {
 		t.Errorf("This test needs updating: %v", s.config)
 	}
+
+	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Minute {
+		t.Errorf("Time has not been updated: %v", time.Unix(s.config.LastSaleRun, 0))
+	}
 }
 
-func TestUpateSalesWithStale(t *testing.T) {
+func TestUpdateSalesWithStale(t *testing.T) {
 	s := getTestServer()
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
 	s.updateSales(context.Background())
