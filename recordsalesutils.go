@@ -104,11 +104,15 @@ func (s *Server) updateSales(ctx context.Context) error {
 				newPrice = 499
 			}
 			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
-			s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
+			err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
+			if err != nil {
+				return err
+			}
 		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 499 {
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 		}
 	}
+	s.config.LastSaleRun = time.Now().Unix()
 	s.save(ctx)
 	return nil
 }
