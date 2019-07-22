@@ -110,7 +110,7 @@ func (s *Server) updateSales(ctx context.Context) error {
 				return err
 			}
 		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 499 {
-			s.Log(fmt.Sprintf("STALE for %v", time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
+			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 		}
 	}
