@@ -141,7 +141,7 @@ func (s *Server) GetState() []*pbg.State {
 	vals := ""
 	for _, a := range s.config.Archives {
 		if a.InstanceId == 19867545 {
-			vals += fmt.Sprintf("%v [%v],", a.Price, a.LastUpdateTime)
+			vals += fmt.Sprintf("%v [%v],", a.Price, time.Unix(a.LastUpdateTime, 0))
 		}
 	}
 	sum := int32(0)
