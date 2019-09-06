@@ -109,9 +109,13 @@ func (s *Server) updateSales(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price == 499 {
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && (sale.Price == 499 || sale.Price == 498) {
 			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
+			err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	s.config.LastSaleRun = time.Now().Unix()
