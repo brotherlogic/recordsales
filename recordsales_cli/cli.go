@@ -19,7 +19,7 @@ import (
 )
 
 func getRecord(ctx context.Context, instanceID int32) *pbrc.Record {
-	host, port, err := utils.Resolve("recordcollection")
+	host, port, err := utils.Resolve("recordcollection", "sales-cli")
 	if err != nil {
 		log.Fatalf("Unable to reach recordcollection: %v", err)
 	}
@@ -43,7 +43,7 @@ func getRecord(ctx context.Context, instanceID int32) *pbrc.Record {
 }
 
 func main() {
-	host, port, err := utils.Resolve("recordsales")
+	host, port, err := utils.Resolve("recordsales", "sales-cli")
 	if err != nil {
 		log.Fatalf("Unable to reach sales: %v", err)
 	}
