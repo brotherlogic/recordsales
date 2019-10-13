@@ -10,7 +10,6 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	pbgd "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
 
@@ -31,15 +30,12 @@ func getRecord(ctx context.Context, instanceID int32) *pbrc.Record {
 	}
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	r, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Filter: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}}})
+	r, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: instanceID})
 	if err != nil {
 		log.Fatalf("Unable to get records: %v", err)
 	}
 
-	if len(r.GetRecords()) == 0 {
-		log.Fatalf("Unable to get record: %v", instanceID)
-	}
-	return r.GetRecords()[0]
+	return r.GetRecord()
 }
 
 func main() {

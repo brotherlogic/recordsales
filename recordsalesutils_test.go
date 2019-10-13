@@ -26,7 +26,7 @@ type testGetter struct {
 	fail    bool
 }
 
-func (t *testGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
+func (t *testGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, error) {
 	if t.fail {
 		return []*pbrc.Record{}, fmt.Errorf("Built to fail")
 	}
