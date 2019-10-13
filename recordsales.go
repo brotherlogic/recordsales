@@ -19,7 +19,7 @@ import (
 )
 
 type getter interface {
-	getRecords(ctx context.Context) ([]*pbrc.Record, error)
+	getListedRecords(ctx context.Context) ([]*pbrc.Record, error)
 	updatePrice(ctx context.Context, instanceID, price int32) error
 	updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category)
 }
@@ -28,7 +28,33 @@ type prodGetter struct {
 	dial func(server string) (*grpc.ClientConn, error)
 }
 
-func (p prodGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
+func (p *prodGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, error) {
+	conn, err := p.dial("recordcollection")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+
+	r, err := client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_Category{pbrc.ReleaseMetadata_LISTED_TO_SELL}})
+	if err != nil {
+		return nil, err
+	}
+
+	records := []*pbrc.Record{}
+	for _, id := range r.GetInstanceIds() {
+		r, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: id})
+		if err != nil {
+			return nil, err
+		}
+
+		records = append(records, r.GetRecord())
+	}
+
+	return records, nil
+}
+
+func (p *prodGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
 	conn, err := p.dial("recordcollection")
 	if err != nil {
 		return
@@ -40,7 +66,7 @@ func (p prodGetter) updateCategory(ctx context.Context, instanceID int32, catego
 	client.UpdateRecord(ctx, update)
 }
 
-func (p prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
+func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
 	conn, err := p.dial("recordcollection")
 	if err != nil {
 		return err
@@ -51,21 +77,6 @@ func (p prodGetter) updatePrice(ctx context.Context, instanceID, price int32) er
 	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{SalePrice: price}}}
 	_, err = client.UpdateRecord(ctx, update)
 	return err
-}
-
-func (p prodGetter) getRecords(ctx context.Context) ([]*pbrc.Record, error) {
-	conn, err := p.dial("recordcollection")
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	client := pbrc.NewRecordCollectionServiceClient(conn)
-	resp, err := client.GetRecords(ctx, &pbrc.GetRecordsRequest{Caller: "recordsales", Filter: &pbrc.Record{Metadata: &pbrc.ReleaseMetadata{}, Release: &pbgd.Release{}}}, grpc.MaxCallRecvMsgSize(1024*1024*1024))
-	if err != nil {
-		return nil, err
-	}
-	return resp.GetRecords(), nil
 }
 
 const (
@@ -86,10 +97,10 @@ func Init() *Server {
 	s := &Server{
 		&goserver.GoServer{},
 		&pb.Config{},
-		prodGetter{},
+		&prodGetter{},
 		int64(0),
 	}
-	s.getter = prodGetter{s.DialMaster}
+	s.getter = &prodGetter{s.DialMaster}
 	return s
 }
 

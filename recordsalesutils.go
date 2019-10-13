@@ -37,7 +37,7 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 }
 
 func (s *Server) syncSales(ctx context.Context) error {
-	records, err := s.getter.getRecords(ctx)
+	records, err := s.getter.getListedRecords(ctx)
 
 	if err != nil {
 		s.Log(fmt.Sprintf("Get error: %v", err))
