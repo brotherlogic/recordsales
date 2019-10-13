@@ -40,7 +40,6 @@ func (s *Server) syncSales(ctx context.Context) error {
 	records, err := s.getter.getListedRecords(ctx)
 
 	if err != nil {
-		s.Log(fmt.Sprintf("Get error: %v", err))
 		return err
 	}
 
@@ -56,6 +55,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 							LastUpdateTime: sale.LastUpdateTime,
 							Price:          sale.Price,
 						}
+						s.Log(fmt.Sprintf("NEW SALE: %v", oldSale))
 						seen := false
 						for _, arch := range s.config.Archives {
 							if arch.InstanceId == oldSale.InstanceId && arch.Price == oldSale.Price {
