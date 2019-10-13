@@ -49,7 +49,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 			for _, sale := range s.config.Sales {
 				if sale.InstanceId == rec.GetRelease().InstanceId {
 					found = true
-					if !rec.GetMetadata().SaleDirty {
+					if rec.GetMetadata().SaleDirty {
 						oldSale := &pb.Sale{
 							InstanceId:     sale.InstanceId,
 							LastUpdateTime: sale.LastUpdateTime,
