@@ -54,13 +54,13 @@ func getTestServer() *Server {
 
 func TestSyncSales(t *testing.T) {
 	s := getTestServer()
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 
 	s.syncSales(context.Background())
 
 	found := false
 	for _, sale := range s.config.Sales {
-		if sale.InstanceId == 12 {
+		if sale.InstanceId == 177077893 {
 			found = true
 		}
 	}
@@ -91,9 +91,9 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 
 func TestSyncSalesWithArchive(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 200})
-	s.config.Archives = append(s.config.Archives, &pb.Sale{InstanceId: 12, Price: 200})
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 200})
+	s.config.Archives = append(s.config.Archives, &pb.Sale{InstanceId: 177077893, Price: 200})
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 
 	s.syncSales(context.Background())
 
@@ -166,8 +166,8 @@ func TestUpdateSalesWithStaleFail(t *testing.T) {
 
 func TestRemoveRecordOnceSold(t *testing.T) {
 	s := getTestServer()
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{Category: pbrc.ReleaseMetadata_SOLD_ARCHIVE, SaleId: 12345}}}}
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 1})
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{Category: pbrc.ReleaseMetadata_SOLD_ARCHIVE, SaleId: 12345}}}}
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893})
 
 	s.syncSales(context.Background())
 

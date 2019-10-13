@@ -45,7 +45,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 	}
 
 	for _, rec := range records {
-		if rec.GetMetadata().SaleId > 0 {
+		if rec.GetMetadata().SaleId > 0 && rec.GetRelease().InstanceId == 177077893 {
 			found := false
 			for _, sale := range s.config.Sales {
 				if sale.InstanceId == rec.GetRelease().InstanceId {
