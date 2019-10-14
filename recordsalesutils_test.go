@@ -115,7 +115,7 @@ func TestSyncSalesWithGetFail(t *testing.T) {
 func TestUpdateSalesWithFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	err := s.updateSales(context.Background())
 	if err == nil {
 		t.Errorf("Update did not fail")
@@ -124,7 +124,7 @@ func TestUpdateSalesWithFail(t *testing.T) {
 
 func TestUpdateSales(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	err := s.updateSales(context.Background())
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
@@ -152,7 +152,7 @@ func TestUpdateSalesWithStale(t *testing.T) {
 func TestUpdateSalesWithStaleFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
 	err := s.updateSales(context.Background())
 
 	if err == nil {
