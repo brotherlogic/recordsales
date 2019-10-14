@@ -99,7 +99,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 func (s *Server) updateSales(ctx context.Context) error {
 	s.updates++
 	for _, sale := range s.config.Sales {
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour && sale.Price != 499 && sale.InstanceId == 177077893 { //one week
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour && sale.Price != 499 && sale.InstanceId == 177077893 && sale.Price != 200 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
 			if newPrice < 499 {
