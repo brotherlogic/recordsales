@@ -40,9 +40,15 @@ func (p *prodGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, erro
 	if err != nil {
 		return nil, err
 	}
+	instanceIds := r.GetInstanceIds()
+	r, err = client.QueryRecords(ctx, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_Category{pbrc.ReleaseMetadata_STALE_SALE}})
+	if err != nil {
+		return nil, err
+	}
+	instanceIds = append(instanceIds, r.GetInstanceIds()...)
 
 	records := []*pbrc.Record{}
-	for _, id := range r.GetInstanceIds() {
+	for _, id := range instanceIds {
 		r, err := client.GetRecord(ctx, &pbrc.GetRecordRequest{InstanceId: id})
 		if err != nil {
 			return nil, err
