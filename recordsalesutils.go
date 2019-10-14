@@ -97,7 +97,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 func (s *Server) updateSales(ctx context.Context) error {
 	s.updates++
 	for _, sale := range s.config.Sales {
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24 && sale.Price != 499 && sale.InstanceId == 177077893 { //one week
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour && sale.Price != 499 && sale.InstanceId == 177077893 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
 			if newPrice < 499 {
@@ -109,7 +109,7 @@ func (s *Server) updateSales(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*2 && (sale.Price == 499 || sale.Price == 498) && sale.InstanceId == 177077893 {
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*2 && (sale.Price == 499 || sale.Price == 498) && sale.InstanceId == 177077893 {
 			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 			err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
