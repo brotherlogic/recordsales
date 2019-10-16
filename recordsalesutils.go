@@ -46,7 +46,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 	s.Log(fmt.Sprintf("Running on %v records", len(records)))
 	time.Sleep(time.Second * 10)
 	for _, rec := range records {
-		if rec.GetMetadata().SaleId > 0 && rec.GetRelease().InstanceId == 177077893 {
+		if rec.GetMetadata().SaleId > 0 {
 			found := false
 			for _, sale := range s.config.Sales {
 				if sale.InstanceId == rec.GetRelease().InstanceId {
