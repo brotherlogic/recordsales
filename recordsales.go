@@ -173,13 +173,19 @@ func (s *Server) GetState() []*pbg.State {
 	}
 	sum := int32(0)
 	pr := int32(0)
+	oldest := time.Now().Unix()
 	for _, s := range s.config.Sales {
+		if s.LastUpdateTime < oldest {
+			oldest = s.LastUpdateTime
+		}
 		sum += s.Price
 		if s.InstanceId == 330510403 {
 			pr += s.Price
 		}
 	}
+
 	return []*pbg.State{
+		&pbg.State{Key: "oldest", TimeValue: oldest},
 		&pbg.State{Key: "last_sale_run", TimeValue: s.config.LastSaleRun},
 		&pbg.State{Key: "active_sales", Value: int64(len(s.config.Sales))},
 		&pbg.State{Key: "archive_sales", Value: int64(len(s.config.Archives))},
