@@ -57,7 +57,6 @@ func (s *Server) syncSales(ctx context.Context) error {
 							LastUpdateTime: sale.LastUpdateTime,
 							Price:          sale.Price,
 						}
-						s.Log(fmt.Sprintf("NEW SALE: %v", oldSale))
 						seen := false
 						for _, arch := range s.config.Archives {
 							if arch.InstanceId == oldSale.InstanceId && arch.Price == oldSale.Price {
@@ -65,6 +64,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 							}
 						}
 						if !seen {
+							s.Log(fmt.Sprintf("NEW SALE: %v", oldSale))
 							s.config.Archives = append(s.config.Archives, oldSale)
 						}
 						sale.Price = rec.GetMetadata().SalePrice
@@ -99,7 +99,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 func (s *Server) updateSales(ctx context.Context) error {
 	s.updates++
 	for _, sale := range s.config.Sales {
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour && sale.Price != 499 && sale.InstanceId == 177077893 && sale.Price != 200 { //one week
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price != 499 && sale.Price != 200 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
 			if newPrice < 499 {
@@ -111,7 +111,7 @@ func (s *Server) updateSales(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*2 && (sale.Price == 499 || sale.Price == 498) && sale.InstanceId == 177077893 {
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
 			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 			err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
