@@ -225,7 +225,7 @@ func main() {
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
 	server.RegisterRepeatingTask(server.checkSaleTime, "check_sale_time", time.Hour)
-	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute*5)
+	//server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute*5)
 
 	fmt.Printf("%v", server.Serve())
 }
