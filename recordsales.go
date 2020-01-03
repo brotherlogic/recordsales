@@ -80,7 +80,7 @@ func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{SalePrice: price}}}
+	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{NewSalePrice: price}}}
 	_, err = client.UpdateRecord(ctx, update)
 	return err
 }
@@ -217,7 +217,11 @@ func main() {
 	server.GoServer.KSclient = *keystoreclient.GetClient(server.DialMaster)
 	server.PrepServer()
 	server.Register = server
-	server.RegisterServer("recordsales", false)
+
+	err := server.RegisterServerV2("recordsales", false, false)
+	if err != nil {
+		return
+	}
 
 	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
 	server.RegisterRepeatingTask(server.checkSaleTime, "check_sale_time", time.Hour)
