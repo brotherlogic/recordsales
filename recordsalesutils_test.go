@@ -46,6 +46,7 @@ func (t *testGetter) updateCategory(ctx context.Context, instanceID int32, categ
 func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
+	s.SkipIssue = true
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	s.getter = &testGetter{}
 
