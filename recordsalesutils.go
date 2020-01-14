@@ -68,6 +68,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 							s.config.Archives = append(s.config.Archives, oldSale)
 						}
 						sale.Price = rec.GetMetadata().SalePrice
+						sale.LastUpdateTime = rec.GetMetadata().LastSalePriceUpdate
 
 					}
 					break

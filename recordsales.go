@@ -124,15 +124,6 @@ func (s *Server) load(ctx context.Context) error {
 
 	s.config = data.(*pb.Config)
 
-	//Remove everything except the ruins
-	newSales := []*pb.Sale{}
-	for _, s := range s.config.Sales {
-		if s.InstanceId == 177077893 {
-			newSales = append(newSales, s)
-		}
-	}
-	s.config.Sales = newSales
-
 	s.config.Archives = s.trimList(ctx, s.config.Archives)
 	return nil
 }
