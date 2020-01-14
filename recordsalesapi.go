@@ -28,5 +28,11 @@ func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb
 		}
 	}
 
+	for _, sale := range s.config.Archives {
+		if sale.InstanceId == req.InstanceId {
+			resp = append(resp, sale)
+		}
+	}
+
 	return &pb.GetStateResponse{Sales: resp}, nil
 }
