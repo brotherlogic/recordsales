@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
-	if r.GetRelease().GetInstanceId() == 1 {
+	if r.GetRelease().GetInstanceId() == 356769827 {
 		return true
 	}
 	return s.testing
@@ -23,6 +23,14 @@ func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc
 
 	for _, rec := range nrecs {
 		if s.isInPlay(ctx, rec) {
+			//Ensure the record is for sale if it needs to be
+			if rec.GetMetadata().SaleState == gdpb.SaleState_EXPIRED {
+				err := s.getter.updatePrice(ctx, rec.GetRelease().GetInstanceId(), rec.GetMetadata().GetSalePrice())
+				if err != nil {
+					return recs, err
+				}
+			}
+
 			recs = append(recs, rec)
 		} else if rec.GetMetadata().SaleState != gdpb.SaleState_EXPIRED || !rec.GetMetadata().GetExpireSale() {
 			err := s.getter.expireSale(ctx, rec.GetRelease().GetInstanceId())
@@ -102,6 +110,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 
 					}
 					break
+
 				}
 			}
 
