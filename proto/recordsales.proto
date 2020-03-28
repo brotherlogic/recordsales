@@ -6,6 +6,7 @@ message Sale {
   int32 instance_id = 1;
   int64 last_update_time = 2;
   int32 price = 3;
+  bool on_hold = 4;
 }
 
 message Config {

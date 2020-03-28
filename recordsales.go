@@ -22,6 +22,7 @@ type getter interface {
 	getListedRecords(ctx context.Context) ([]*pbrc.Record, error)
 	updatePrice(ctx context.Context, instanceID, price int32) error
 	updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category)
+	expireSale(ctx context.Context, instanceID int32) error
 }
 
 type prodGetter struct {
@@ -85,6 +86,19 @@ func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 	return err
 }
 
+func (p *prodGetter) expireSale(ctx context.Context, instanceID int32) error {
+	conn, err := p.dial("recordcollection")
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{ExpireSale: true}}}
+	_, err = client.UpdateRecord(ctx, update)
+	return err
+}
+
 const (
 	// KEY - where we store sale info
 	KEY = "/github.com/brotherlogic/recordsales/config"
@@ -96,6 +110,7 @@ type Server struct {
 	config  *pb.Config
 	getter  getter
 	updates int64
+	testing bool
 }
 
 // Init builds the server
@@ -105,6 +120,7 @@ func Init() *Server {
 		&pb.Config{},
 		&prodGetter{},
 		int64(0),
+		false,
 	}
 	s.getter = &prodGetter{s.DialMaster}
 	return s
