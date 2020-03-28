@@ -222,7 +222,7 @@ func TestSaleTrim(t *testing.T) {
 	s := getTestServer()
 	s.testing = false
 	recs, err := s.trimRecords(context.Background(), []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827}, Metadata: &pbrc.ReleaseMetadata{}},
 		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
 	})
 
@@ -232,6 +232,19 @@ func TestSaleTrim(t *testing.T) {
 
 	if len(recs) != 1 {
 		t.Errorf("Records were not trimmed")
+	}
+}
+func TestSaleTrimRestoreFail(t *testing.T) {
+	s := getTestServer()
+	s.getter = &testGetter{fail: true}
+	s.testing = false
+	_, err := s.trimRecords(context.Background(), []*pbrc.Record{
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827}, Metadata: &pbrc.ReleaseMetadata{SaleState: pbgd.SaleState_EXPIRED}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
+	})
+
+	if err == nil {
+		t.Fatalf("Error in trim: %v", err)
 	}
 }
 
