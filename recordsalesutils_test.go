@@ -22,8 +22,9 @@ func TestTrim(t *testing.T) {
 }
 
 type testGetter struct {
-	records []*pbrc.Record
-	fail    bool
+	records    []*pbrc.Record
+	fail       bool
+	failExpire bool
 }
 
 func (t *testGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, error) {
@@ -40,6 +41,13 @@ func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 	return nil
 }
 
+func (t *testGetter) expireSale(ctx context.Context, price int32) error {
+	if t.failExpire {
+		return fmt.Errorf("Built to fail")
+	}
+	return nil
+}
+
 func (t *testGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
 }
 
@@ -49,6 +57,7 @@ func getTestServer() *Server {
 	s.SkipIssue = true
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	s.getter = &testGetter{}
+	s.testing = true
 
 	return s
 }
@@ -74,7 +83,7 @@ func TestSyncSales(t *testing.T) {
 func TestSyncSalesWithCacheHit(t *testing.T) {
 	s := getTestServer()
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL, LastSalePriceUpdate: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
 
 	s.syncSales(context.Background())
 
@@ -113,6 +122,17 @@ func TestSyncSalesWithGetFail(t *testing.T) {
 	}
 }
 
+func TestSyncSalesWithExpireFail(t *testing.T) {
+	s := getTestServer()
+	s.testing = false
+	s.getter = &testGetter{failExpire: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.syncSales(context.Background())
+
+	if len(s.config.Sales) > 0 {
+		t.Errorf("Sales have synced somehow: %v", s.config)
+	}
+}
+
 func TestUpdateSalesWithFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
@@ -137,6 +157,19 @@ func TestUpdateSales(t *testing.T) {
 
 	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Minute {
 		t.Errorf("Time has not been updated: %v", time.Unix(s.config.LastSaleRun, 0))
+	}
+}
+
+func TestUpdateSalesWhenOnHold(t *testing.T) {
+	s := getTestServer()
+	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
+	err := s.updateSales(context.Background())
+	if err != nil {
+		t.Errorf("Update failed: %v", err)
+	}
+
+	if s.config.Sales[0].LastUpdateTime != 12 {
+		t.Errorf("On Hold sale was updated")
 	}
 }
 
@@ -175,4 +208,44 @@ func TestRemoveRecordOnceSold(t *testing.T) {
 	if len(s.config.Sales) != 0 && len(s.config.Archives) != 1 {
 		t.Errorf("Record sold has not been removed and added to archive")
 	}
+}
+
+func TestInPlay(t *testing.T) {
+	s := getTestServer()
+	s.testing = false
+	if s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{}}) {
+		t.Errorf("All records are not in play")
+	}
+}
+
+func TestSaleTrim(t *testing.T) {
+	s := getTestServer()
+	s.testing = false
+	recs, err := s.trimRecords(context.Background(), []*pbrc.Record{
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
+	})
+
+	if err != nil {
+		t.Fatalf("Error in trim: %v", err)
+	}
+
+	if len(recs) != 1 {
+		t.Errorf("Records were not trimmed")
+	}
+}
+
+func TestSaleTrimFail(t *testing.T) {
+	s := getTestServer()
+	s.testing = false
+	s.getter = &testGetter{failExpire: true}
+	_, err := s.trimRecords(context.Background(), []*pbrc.Record{
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
+	})
+
+	if err == nil {
+		t.Fatalf("Trim did not fail")
+	}
+
 }

@@ -36,3 +36,17 @@ func TestGetState(t *testing.T) {
 		t.Errorf("Bad get sales pull: %v", resp)
 	}
 }
+
+func TestGetStateFromArchives(t *testing.T) {
+	s := getTestServer()
+	s.config.Archives = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
+
+	resp, err := s.GetSaleState(context.Background(), &pb.GetStateRequest{InstanceId: 12})
+	if err != nil {
+		t.Errorf("Problem with getting stale: %v", err)
+	}
+
+	if len(resp.GetSales()) != 1 {
+		t.Errorf("Bad get sales pull: %v", resp)
+	}
+}

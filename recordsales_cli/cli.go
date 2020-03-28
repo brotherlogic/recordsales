@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/brotherlogic/goserver/utils"
 	"golang.org/x/net/context"
@@ -75,7 +76,7 @@ func main() {
 			fmt.Printf("No sales found!\n")
 		}
 		for _, r := range res.GetSales() {
-			fmt.Printf("%v\n", r)
+			fmt.Printf("%v - %v\n", time.Unix(r.GetLastUpdateTime(), 0), r.GetPrice())
 		}
 	default:
 		fmt.Sprintf("Unknown command\n")

@@ -6,9 +6,34 @@ import (
 
 	"golang.org/x/net/context"
 
+	gdpb "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
 )
+
+func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
+	if r.GetRelease().GetInstanceId() == 1 {
+		return true
+	}
+	return s.testing
+}
+
+func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc.Record, error) {
+	recs := []*pbrc.Record{}
+
+	for _, rec := range nrecs {
+		if s.isInPlay(ctx, rec) {
+			recs = append(recs, rec)
+		} else if rec.GetMetadata().SaleState != gdpb.SaleState_EXPIRED || !rec.GetMetadata().GetExpireSale() {
+			err := s.getter.expireSale(ctx, rec.GetRelease().GetInstanceId())
+			if err != nil {
+				return recs, err
+			}
+		}
+	}
+
+	return recs, nil
+}
 
 func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 	// Trim out excess
@@ -37,14 +62,18 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 }
 
 func (s *Server) syncSales(ctx context.Context) error {
-	records, err := s.getter.getListedRecords(ctx)
+	nrecords, err := s.getter.getListedRecords(ctx)
+	if err != nil {
+		return err
+	}
 
+	records, err := s.trimRecords(ctx, nrecords)
 	if err != nil {
 		return err
 	}
 
 	s.Log(fmt.Sprintf("Running on %v records", len(records)))
-	time.Sleep(time.Second * 10)
+
 	for _, rec := range records {
 		if rec.GetMetadata().SaleId > 0 {
 			found := false
@@ -69,6 +98,7 @@ func (s *Server) syncSales(ctx context.Context) error {
 						}
 						sale.Price = rec.GetMetadata().SalePrice
 						sale.LastUpdateTime = rec.GetMetadata().LastSalePriceUpdate
+						sale.OnHold = rec.GetMetadata().GetSaleState() == gdpb.SaleState_EXPIRED
 
 					}
 					break
@@ -100,24 +130,26 @@ func (s *Server) syncSales(ctx context.Context) error {
 func (s *Server) updateSales(ctx context.Context) error {
 	s.updates++
 	for _, sale := range s.config.Sales {
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price != 499 && sale.Price != 200 { //one week
-			sale.LastUpdateTime = time.Now().Unix()
-			newPrice := sale.Price - 500
-			if newPrice < 499 {
-				newPrice = 499
-			}
-			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
-			err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
-			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
-			if err != nil {
-				return err
-			}
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
-			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
-			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
-			err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
-			if err != nil {
-				return err
+		if !sale.OnHold {
+			if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price != 499 && sale.Price != 200 { //one week
+				sale.LastUpdateTime = time.Now().Unix()
+				newPrice := sale.Price - 500
+				if newPrice < 499 {
+					newPrice = 499
+				}
+				s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
+				err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
+				s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
+				if err != nil {
+					return err
+				}
+			} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
+				s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
+				s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
+				err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
