@@ -57,7 +57,7 @@ func getTestServer() *Server {
 	s.SkipIssue = true
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	s.getter = &testGetter{}
-	s.testing = true
+	s.testing = false
 
 	return s
 }
@@ -125,7 +125,7 @@ func TestSyncSalesWithGetFail(t *testing.T) {
 func TestSyncSalesWithExpireFail(t *testing.T) {
 	s := getTestServer()
 	s.testing = false
-	s.getter = &testGetter{failExpire: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.getter = &testGetter{failExpire: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7"}}}}}}}
 	s.syncSales(context.Background())
 
 	if len(s.config.Sales) > 0 {
@@ -210,10 +210,18 @@ func TestRemoveRecordOnceSold(t *testing.T) {
 	}
 }
 
+func TestNotInPlay(t *testing.T) {
+	s := getTestServer()
+	s.testing = false
+	if s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}}) {
+		t.Errorf("All records are not in play")
+	}
+}
+
 func TestInPlay(t *testing.T) {
 	s := getTestServer()
 	s.testing = false
-	if s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{}}) {
+	if !s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"12\""}}}}, Metadata: &pbrc.ReleaseMetadata{}}) {
 		t.Errorf("All records are not in play")
 	}
 }
@@ -222,7 +230,7 @@ func TestSaleTrim(t *testing.T) {
 	s := getTestServer()
 	s.testing = false
 	recs, err := s.trimRecords(context.Background(), []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
 		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
 	})
 
@@ -231,20 +239,20 @@ func TestSaleTrim(t *testing.T) {
 	}
 
 	if len(recs) != 1 {
-		t.Errorf("Records were not trimmed")
+		t.Errorf("Records were not trimmed: %v", len(recs))
 	}
 }
 func TestSaleTrimRestoreFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
 	s.testing = false
-	_, err := s.trimRecords(context.Background(), []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827}, Metadata: &pbrc.ReleaseMetadata{SaleState: pbgd.SaleState_EXPIRED}},
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
+	tr, err := s.trimRecords(context.Background(), []*pbrc.Record{
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{SaleState: pbgd.SaleState_EXPIRED}},
 	})
 
 	if err == nil {
-		t.Fatalf("Error in trim: %v", err)
+		t.Fatalf("Error in trim: %v", tr)
 	}
 }
 
@@ -253,8 +261,8 @@ func TestSaleTrimFail(t *testing.T) {
 	s.testing = false
 	s.getter = &testGetter{failExpire: true}
 	_, err := s.trimRecords(context.Background(), []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 1}, Metadata: &pbrc.ReleaseMetadata{}},
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
+		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{SaleState: pbgd.SaleState_EXPIRED}},
 	})
 
 	if err == nil {
