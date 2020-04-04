@@ -64,6 +64,7 @@ func getTestServer() *Server {
 
 func TestSyncSales(t *testing.T) {
 	s := getTestServer()
+	s.testing = true
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 
 	s.syncSales(context.Background())
@@ -200,6 +201,7 @@ func TestUpdateSalesWithStaleFail(t *testing.T) {
 
 func TestRemoveRecordOnceSold(t *testing.T) {
 	s := getTestServer()
+	s.testing = true
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{Category: pbrc.ReleaseMetadata_SOLD_ARCHIVE, SaleId: 12345}}}}
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893})
 
@@ -212,7 +214,6 @@ func TestRemoveRecordOnceSold(t *testing.T) {
 
 func TestNotInPlay(t *testing.T) {
 	s := getTestServer()
-	s.testing = false
 	if s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}}) {
 		t.Errorf("All records are not in play")
 	}
@@ -220,7 +221,7 @@ func TestNotInPlay(t *testing.T) {
 
 func TestInPlay(t *testing.T) {
 	s := getTestServer()
-	s.testing = false
+	s.testing = true
 	if !s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"12\""}}}}, Metadata: &pbrc.ReleaseMetadata{}}) {
 		t.Errorf("All records are not in play")
 	}
@@ -228,7 +229,7 @@ func TestInPlay(t *testing.T) {
 
 func TestSaleTrim(t *testing.T) {
 	s := getTestServer()
-	s.testing = false
+	s.testing = true
 	recs, err := s.trimRecords(context.Background(), []*pbrc.Record{
 		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
 		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
@@ -238,14 +239,14 @@ func TestSaleTrim(t *testing.T) {
 		t.Fatalf("Error in trim: %v", err)
 	}
 
-	if len(recs) != 1 {
+	if len(recs) != 2 {
 		t.Errorf("Records were not trimmed: %v", len(recs))
 	}
 }
 func TestSaleTrimRestoreFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
-	s.testing = false
+	s.testing = true
 	tr, err := s.trimRecords(context.Background(), []*pbrc.Record{
 		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
 		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{SaleState: pbgd.SaleState_EXPIRED}},
