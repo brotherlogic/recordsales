@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -13,20 +12,7 @@ import (
 )
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
-	for _, f := range r.GetRelease().GetFormats() {
-		found := len(f.GetDescriptions()) == 0
-		for _, d := range f.GetDescriptions() {
-			if strings.Contains(d, "7") {
-				found = true
-			}
-		}
-
-		if !found {
-			return true
-		}
-		return false
-	}
-	return !s.testing
+	return s.testing
 }
 
 func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc.Record, error) {
