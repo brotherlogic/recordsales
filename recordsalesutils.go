@@ -19,6 +19,7 @@ func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc
 	recs := []*pbrc.Record{}
 
 	for _, rec := range nrecs {
+		s.Log(fmt.Sprintf("%v is in play? %v", rec.GetRelease().GetInstanceId(), s.isInPlay(ctx, rec)))
 		if s.isInPlay(ctx, rec) {
 			//Ensure the record is for sale if it needs to be
 			if rec.GetMetadata().SaleState == gdpb.SaleState_EXPIRED {
