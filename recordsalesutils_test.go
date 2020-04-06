@@ -102,6 +102,7 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 
 func TestSyncSalesWithArchive(t *testing.T) {
 	s := getTestServer()
+	s.testing = true
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 200})
 	s.config.Archives = append(s.config.Archives, &pb.Sale{InstanceId: 177077893, Price: 200})
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 177077893}}}}
