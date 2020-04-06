@@ -30,7 +30,7 @@ func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc
 			}
 
 			recs = append(recs, rec)
-		} else if rec.GetMetadata().SaleState != gdpb.SaleState_EXPIRED || !rec.GetMetadata().GetExpireSale() {
+		} else if rec.GetMetadata().SaleState != gdpb.SaleState_EXPIRED || !rec.GetMetadata().GetSaleDirty() {
 			err := s.getter.expireSale(ctx, rec.GetRelease().GetInstanceId())
 			if err != nil {
 				return recs, err
