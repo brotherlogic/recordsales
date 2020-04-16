@@ -69,7 +69,7 @@ func (p *prodGetter) updateCategory(ctx context.Context, instanceID int32, categ
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{Category: category}}}
+	update := &pbrc.UpdateRecordRequest{Reason: "RecordSales-updateCategory", Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{Category: category}}}
 	client.UpdateRecord(ctx, update)
 }
 
@@ -81,7 +81,7 @@ func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{NewSalePrice: price}}}
+	update := &pbrc.UpdateRecordRequest{Reason: "RecordSales-updatePrice", Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{NewSalePrice: price}}}
 	_, err = client.UpdateRecord(ctx, update)
 	return err
 }
@@ -94,7 +94,7 @@ func (p *prodGetter) expireSale(ctx context.Context, instanceID int32) error {
 	defer conn.Close()
 
 	client := pbrc.NewRecordCollectionServiceClient(conn)
-	update := &pbrc.UpdateRecordRequest{Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{ExpireSale: true}}}
+	update := &pbrc.UpdateRecordRequest{Reason: "RecordSales-expireSale", Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{ExpireSale: true}}}
 	_, err = client.UpdateRecord(ctx, update)
 	return err
 }
