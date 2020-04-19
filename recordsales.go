@@ -120,7 +120,7 @@ func Init() *Server {
 		&pb.Config{},
 		&prodGetter{},
 		int64(0),
-		false,
+		true,
 	}
 	s.getter = &prodGetter{s.DialMaster}
 	return s
