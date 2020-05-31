@@ -103,6 +103,9 @@ func (s *Server) syncSales(ctx context.Context) error {
 							s.config.Archives = append(s.config.Archives, oldSale)
 						}
 						sale.Price = rec.GetMetadata().SalePrice
+						if sale.Price == 0 {
+							sale.Price = rec.GetMetadata().GetCurrentSalePrice()
+						}
 						sale.LastUpdateTime = rec.GetMetadata().LastSalePriceUpdate
 						sale.OnHold = rec.GetMetadata().GetSaleState() == gdpb.SaleState_EXPIRED
 
