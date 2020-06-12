@@ -12,6 +12,7 @@ func TestListStale(t *testing.T) {
 	s := getTestServer()
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 13, LastUpdateTime: time.Now().Add(time.Hour * -5).Unix()})
+	s.save(context.Background())
 
 	resp, err := s.GetStale(context.Background(), &pb.GetStaleRequest{})
 	if err != nil {
@@ -26,6 +27,7 @@ func TestGetState(t *testing.T) {
 	s := getTestServer()
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
 	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 13, LastUpdateTime: time.Now().Add(time.Hour * -5).Unix()})
+	s.save(context.Background())
 
 	resp, err := s.GetSaleState(context.Background(), &pb.GetStateRequest{InstanceId: 12})
 	if err != nil {
@@ -40,6 +42,7 @@ func TestGetState(t *testing.T) {
 func TestGetStateFromArchives(t *testing.T) {
 	s := getTestServer()
 	s.config.Archives = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
+	s.save(context.Background())
 
 	resp, err := s.GetSaleState(context.Background(), &pb.GetStateRequest{InstanceId: 12})
 	if err != nil {

@@ -204,11 +204,15 @@ func (s *Server) GetState() []*pbg.State {
 	}
 }
 
-func (s *Server) checkSaleTime(ctx context.Context) error {
+func (s *Server) checkSaleTime(ctx context.Context) (time.Time, error) {
+	err := s.load(ctx)
+	if err != nil {
+		return time.Now().Add(time.Hour), err
+	}
 	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Hour*24*7 {
 		s.RaiseIssue(ctx, "Sale Problem", fmt.Sprintf("Last sale run was %v", time.Unix(s.config.LastSaleRun, 0)), false)
 	}
-	return nil
+	return time.Now().Add(time.Hour), nil
 }
 
 func main() {
@@ -225,14 +229,14 @@ func main() {
 	server.PrepServer()
 	server.Register = server
 
-	err := server.RegisterServerV2("recordsales", false, false)
+	err := server.RegisterServerV2("recordsales", false, true)
 	if err != nil {
 		return
 	}
 
-	server.RegisterRepeatingTask(server.syncSales, "sync_sales", time.Minute*5)
-	server.RegisterRepeatingTask(server.checkSaleTime, "check_sale_time", time.Hour)
-	server.RegisterRepeatingTask(server.updateSales, "update_sales", time.Minute*5)
+	server.RegisterLockingTask(server.syncSales, "sync_sales")
+	server.RegisterLockingTask(server.checkSaleTime, "check_sale_time")
+	server.RegisterLockingTask(server.updateSales, "update_sales")
 
 	fmt.Printf("%v", server.Serve())
 }
