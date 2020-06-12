@@ -9,6 +9,7 @@ import (
 
 // GetStale gets the stale records
 func (s *Server) GetStale(ctx context.Context, req *pb.GetStaleRequest) (*pb.GetStaleResponse, error) {
+	err := s.load(ctx)
 	resp := []*pb.Sale{}
 	for _, sale := range s.config.Sales {
 		if sale.Price <= 500 && time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24 {
@@ -16,11 +17,12 @@ func (s *Server) GetStale(ctx context.Context, req *pb.GetStaleRequest) (*pb.Get
 		}
 	}
 
-	return &pb.GetStaleResponse{StaleSales: resp}, nil
+	return &pb.GetStaleResponse{StaleSales: resp}, err
 }
 
 // GetSaleState gets the state of a sale
 func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
+	err := s.load(ctx)
 	resp := []*pb.Sale{}
 	for _, sale := range s.config.Sales {
 		if sale.InstanceId == req.InstanceId {
@@ -34,5 +36,5 @@ func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb
 		}
 	}
 
-	return &pb.GetStateResponse{Sales: resp}, nil
+	return &pb.GetStateResponse{Sales: resp}, err
 }

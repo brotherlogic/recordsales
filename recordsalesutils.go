@@ -67,15 +67,19 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 	return narch
 }
 
-func (s *Server) syncSales(ctx context.Context) error {
+func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
+	err := s.load(ctx)
+	if err != nil {
+		return time.Now().Add(time.Hour), err
+	}
 	nrecords, err := s.getter.getListedRecords(ctx)
 	if err != nil {
-		return err
+		return time.Now().Add(time.Hour), err
 	}
 
 	records, err := s.trimRecords(ctx, nrecords)
 	if err != nil {
-		return err
+		return time.Now().Add(time.Hour), err
 	}
 
 	s.Log(fmt.Sprintf("Running on %v records", len(records)))
@@ -134,10 +138,15 @@ func (s *Server) syncSales(ctx context.Context) error {
 	}
 
 	s.save(ctx)
-	return nil
+	return time.Now().Add(time.Hour), nil
 }
 
-func (s *Server) updateSales(ctx context.Context) error {
+func (s *Server) updateSales(ctx context.Context) (time.Time, error) {
+	err := s.load(ctx)
+	if err != nil {
+		return time.Now().Add(time.Hour), err
+	}
+
 	s.updates++
 	for _, sale := range s.config.Sales {
 		if !sale.OnHold {
@@ -151,19 +160,19 @@ func (s *Server) updateSales(ctx context.Context) error {
 				err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
 				s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
 				if err != nil {
-					return err
+					return time.Now().Add(time.Hour), err
 				}
 			} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
 				s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 				s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 				err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
 				if err != nil {
-					return err
+					return time.Now().Add(time.Hour), err
 				}
 			}
 		}
 	}
 	s.config.LastSaleRun = time.Now().Unix()
 	s.save(ctx)
-	return nil
+	return time.Now().Add(time.Hour), nil
 }
