@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
 	"golang.org/x/net/context"
 )
