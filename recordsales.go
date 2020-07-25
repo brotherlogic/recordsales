@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/brotherlogic/goserver"
-	"github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
@@ -210,7 +209,7 @@ func (s *Server) checkSaleTime(ctx context.Context) (time.Time, error) {
 		return time.Now().Add(time.Hour), err
 	}
 	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Hour*24*7 {
-		s.RaiseIssue(ctx, "Sale Problem", fmt.Sprintf("Last sale run was %v", time.Unix(s.config.LastSaleRun, 0)), false)
+		s.RaiseIssue("Sale Problem", fmt.Sprintf("Last sale run was %v", time.Unix(s.config.LastSaleRun, 0)))
 	}
 	return time.Now().Add(time.Hour), nil
 }
@@ -225,7 +224,6 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 	server := Init()
-	server.GoServer.KSclient = *keystoreclient.GetClient(server.DialMaster)
 	server.PrepServer()
 	server.Register = server
 
@@ -233,10 +231,6 @@ func main() {
 	if err != nil {
 		return
 	}
-
-	server.RegisterLockingTask(server.syncSales, "sync_sales")
-	server.RegisterLockingTask(server.checkSaleTime, "check_sale_time")
-	server.RegisterLockingTask(server.updateSales, "update_sales")
 
 	fmt.Printf("%v", server.Serve())
 }
