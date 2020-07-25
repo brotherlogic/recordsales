@@ -38,3 +38,9 @@ func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb
 
 	return &pb.GetStateResponse{Sales: resp}, err
 }
+
+//ClientUpdate forces a move
+func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest) (*pbrc.ClientUpdateResponse, error) {
+	//Place holder
+	return &pbrc.ClientUpdateResponse{}, nil
+}
