@@ -61,7 +61,7 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 		if add {
 			narch = append(narch, a)
 		} else {
-			s.RaiseIssue(ctx, "Trim Needed", "Need to trim archives", false)
+			s.RaiseIssue("Trim Needed", "Need to trim archives")
 		}
 	}
 	return narch
