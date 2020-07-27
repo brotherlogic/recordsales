@@ -34,8 +34,17 @@ func (s *Server) runSales() {
 
 		err = s.updateSales(ctx, config.Sales[0])
 		cancel()
-		s.Log(fmt.Sprintf("Running update for %v -> %v", config.Sales[0], err))
-		time.Sleep(time.Minute)
+
+		//Next update time
+		nut := time.Unix(config.Sales[1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
+		stime := time.Now().Sub(nut)
+		time.Sleep(time.Second * 2)
+		s.Log(fmt.Sprintf("Sleeping for %v", stime))
+		if stime < 0 {
+			time.Sleep(time.Minute)
+		} else {
+			time.Sleep(stime)
+		}
 	}
 }
 
