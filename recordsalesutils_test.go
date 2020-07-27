@@ -84,9 +84,10 @@ func TestSyncSales(t *testing.T) {
 
 func TestSyncSalesWithCacheHit(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
+	config := &pb.Config{}
+	config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL, LastSalePriceUpdate: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
-	s.save(context.Background())
+	s.save(context.Background(), config)
 
 	s.syncSales(context.Background())
 
@@ -105,10 +106,11 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 func TestSyncSalesWithArchive(t *testing.T) {
 	s := getTestServer()
 	s.testing = true
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 200})
-	s.config.Archives = append(s.config.Archives, &pb.Sale{InstanceId: 177077893, Price: 200})
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 200})
+	config.Archives = append(config.Archives, &pb.Sale{InstanceId: 177077893, Price: 200})
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 177077893}}}}
-	s.save(context.Background())
+	s.save(context.Background(), config)
 
 	s.syncSales(context.Background())
 
@@ -141,9 +143,10 @@ func TestSyncSalesWithExpireFail(t *testing.T) {
 func TestUpdateSalesWithFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
-	s.save(context.Background())
-	_, err := s.updateSales(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
+	s.save(context.Background(), config)
+	err := s.updateSales(context.Background())
 	if err == nil {
 		t.Errorf("Update did not fail")
 	}
@@ -151,14 +154,15 @@ func TestUpdateSalesWithFail(t *testing.T) {
 
 func TestUpdateSales(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
-	s.save(context.Background())
-	_, err := s.updateSales(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
+	s.save(context.Background(), config)
+	err := s.updateSales(context.Background())
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
 
-	if s.config.Sales[0].LastUpdateTime == 12 {
+	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime == 12 {
 		t.Errorf("This test needs updating: %v", s.config)
 	}
 
@@ -169,25 +173,27 @@ func TestUpdateSales(t *testing.T) {
 
 func TestUpdateSalesWhenOnHold(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
-	s.save(context.Background())
-	_, err := s.updateSales(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
+	s.save(context.Background(), config)
+	err := s.updateSales(context.Background())
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
 
-	if s.config.Sales[0].LastUpdateTime != 12 {
+	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
 		t.Errorf("On Hold sale was updated")
 	}
 }
 
 func TestUpdateSalesWithStale(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
-	s.save(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
+	s.save(context.Background(), config)
 	s.updateSales(context.Background())
 
-	if s.config.Sales[0].LastUpdateTime != 12 {
+	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
 		t.Errorf("This test needs updating: %v", s.config)
 	}
 }
@@ -195,15 +201,16 @@ func TestUpdateSalesWithStale(t *testing.T) {
 func TestUpdateSalesWithStaleFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true}
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
-	s.save(context.Background())
-	_, err := s.updateSales(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
+	s.save(context.Background(), config)
+	err := s.updateSales(context.Background())
 
 	if err == nil {
 		t.Errorf("Test did not fail")
 	}
 
-	if s.config.Sales[0].LastUpdateTime != 12 {
+	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
 		t.Errorf("This test needs updating: %v", s.config)
 	}
 }
@@ -212,8 +219,9 @@ func TestRemoveRecordOnceSold(t *testing.T) {
 	s := getTestServer()
 	s.testing = true
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{Category: pbrc.ReleaseMetadata_SOLD_ARCHIVE, SaleId: 12345}}}}
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 177077893})
-	s.save(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893})
+	s.save(context.Background(), config)
 	s.syncSales(context.Background())
 
 	if len(s.config.Sales) != 0 && len(s.config.Archives) != 1 {
@@ -290,7 +298,7 @@ func TestFails(t *testing.T) {
 		t.Errorf("Should have failed")
 	}
 
-	_, err = s.updateSales(context.Background())
+	err = s.updateSales(context.Background())
 	if err == nil {
 		t.Errorf("Should have failed")
 	}

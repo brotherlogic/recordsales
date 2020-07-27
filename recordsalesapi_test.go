@@ -10,9 +10,10 @@ import (
 
 func TestListStale(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 13, LastUpdateTime: time.Now().Add(time.Hour * -5).Unix()})
-	s.save(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 13, LastUpdateTime: time.Now().Add(time.Hour * -5).Unix()})
+	s.save(context.Background(), config)
 
 	resp, err := s.GetStale(context.Background(), &pb.GetStaleRequest{})
 	if err != nil {
@@ -25,9 +26,10 @@ func TestListStale(t *testing.T) {
 
 func TestGetState(t *testing.T) {
 	s := getTestServer()
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
-	s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 13, LastUpdateTime: time.Now().Add(time.Hour * -5).Unix()})
-	s.save(context.Background())
+	config := &pb.Config{}
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
+	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 13, LastUpdateTime: time.Now().Add(time.Hour * -5).Unix()})
+	s.save(context.Background(), config)
 
 	resp, err := s.GetSaleState(context.Background(), &pb.GetStateRequest{InstanceId: 12})
 	if err != nil {
@@ -41,8 +43,9 @@ func TestGetState(t *testing.T) {
 
 func TestGetStateFromArchives(t *testing.T) {
 	s := getTestServer()
-	s.config.Archives = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
-	s.save(context.Background())
+	config := &pb.Config{}
+	config.Archives = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: time.Now().Add(time.Hour * -48).Unix()})
+	s.save(context.Background(), config)
 
 	resp, err := s.GetSaleState(context.Background(), &pb.GetStateRequest{InstanceId: 12})
 	if err != nil {
