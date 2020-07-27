@@ -149,8 +149,13 @@ func (s *Server) updateSales(ctx context.Context) error {
 
 	s.updates++
 	for _, sale := range config.Sales {
-		if sale.InstanceId == 301534855 {
-			s.Log(fmt.Sprintf("Running sale update"))
+		if sale.InstanceId == 399760158 {
+			cancel, err := s.ElectKey("399760158")
+			if err != nil {
+				return err
+			}
+			defer cancel()
+			s.Log(fmt.Sprintf("Running sale update: %v", sale.InstanceId))
 			time.Sleep(time.Second * 5)
 			if !sale.OnHold {
 				if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price != 499 && sale.Price != 200 { //two weeks
