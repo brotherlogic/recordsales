@@ -21,7 +21,6 @@ func (s *Server) runSales() {
 	for true {
 		ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
 		config, err := s.load(ctx)
-		cancel()
 		if err != nil {
 			s.Log(fmt.Sprintf("Unable to load config: %v", err))
 			time.Sleep(time.Minute)
@@ -32,7 +31,9 @@ func (s *Server) runSales() {
 			return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
 		})
 
-		s.Log(fmt.Sprintf("Running update for %v -> %v", config.Sales[0], config.Sales[1]))
+		err = s.updateSales(ctx, config.Sales[0])
+		cancel()
+		s.Log(fmt.Sprintf("Running update for %v -> %v", config.Sales[0], err))
 		time.Sleep(time.Minute)
 	}
 }
@@ -163,46 +164,35 @@ func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
 	return time.Now().Add(time.Hour), nil
 }
 
-func (s *Server) updateSales(ctx context.Context) error {
-	config, err := s.load(ctx)
+func (s *Server) updateSales(ctx context.Context, sale *pb.Sale) error {
+	cancel, err := s.ElectKey(fmt.Sprintf("%v", sale.GetInstanceId()))
 	if err != nil {
 		return err
 	}
-
-	s.updates++
-	for _, sale := range config.Sales {
-		if sale.InstanceId == 399760158 {
-			cancel, err := s.ElectKey("399760158")
+	defer cancel()
+	s.Log(fmt.Sprintf("Running sale update: %v", sale.GetInstanceId()))
+	time.Sleep(time.Second * 5)
+	if !sale.OnHold {
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price != 499 && sale.Price != 200 { //two weeks
+			sale.LastUpdateTime = time.Now().Unix()
+			newPrice := sale.Price - 500
+			if newPrice < 499 {
+				newPrice = 499
+			}
+			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
+			err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
+			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
 			if err != nil {
 				return err
 			}
-			defer cancel()
-			s.Log(fmt.Sprintf("Running sale update: %v", sale.InstanceId))
-			time.Sleep(time.Second * 5)
-			if !sale.OnHold {
-				if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price != 499 && sale.Price != 200 { //two weeks
-					sale.LastUpdateTime = time.Now().Unix()
-					newPrice := sale.Price - 500
-					if newPrice < 499 {
-						newPrice = 499
-					}
-					s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
-					err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
-					s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
-					if err != nil {
-						return err
-					}
-				} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
-					s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
-					s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
-					err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
-					if err != nil {
-						return err
-					}
-				}
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
+			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
+			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
+			err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
+			if err != nil {
+				return err
 			}
 		}
 	}
-	config.LastSaleRun = time.Now().Unix()
-	return s.save(ctx, config)
+	return nil
 }
