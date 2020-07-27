@@ -152,7 +152,7 @@ func TestUpdateSalesWithFail(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
+	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	if err == nil {
 		t.Errorf("Update did not fail")
 	}
@@ -163,7 +163,7 @@ func TestUpdateSales(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
+	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
@@ -182,7 +182,7 @@ func TestUpdateSalesWhenOnHold(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
+	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
@@ -197,7 +197,7 @@ func TestUpdateSalesWithStale(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
 	s.save(context.Background(), config)
-	s.updateSales(context.Background(), &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
+	s.updateSales(&pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
 
 	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
 		t.Errorf("This test needs updating: %v", s.config)
@@ -210,7 +210,7 @@ func TestUpdateSalesWithStaleFail(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
+	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
 
 	if err == nil {
 		t.Errorf("Test did not fail")
@@ -304,7 +304,7 @@ func TestFails(t *testing.T) {
 		t.Errorf("Should have failed")
 	}
 
-	err = s.updateSales(context.Background(), &pb.Sale{})
+	err = s.updateSales(&pb.Sale{})
 	if err == nil {
 		t.Errorf("Should have failed")
 	}

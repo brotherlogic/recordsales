@@ -21,6 +21,7 @@ func (s *Server) runSales() {
 	for true {
 		ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
 		config, err := s.load(ctx)
+		cancel()
 		if err != nil {
 			s.Log(fmt.Sprintf("Unable to load config: %v", err))
 			time.Sleep(time.Minute)
@@ -32,13 +33,11 @@ func (s *Server) runSales() {
 			return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
 		})
 
-		err = s.updateSales(ctx, config.Sales[0])
-		cancel()
+		err = s.updateSales(config.Sales[0])
 
 		//Next update time
 		nut := time.Unix(config.Sales[1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
 		stime := nut.Sub(time.Now())
-		time.Sleep(time.Second * 2)
 		s.Log(fmt.Sprintf("Sleeping for %v from %v", stime, time.Unix(config.Sales[1].GetLastUpdateTime(), 0)))
 		if stime < 0 {
 			time.Sleep(time.Minute)
@@ -165,15 +164,17 @@ func (s *Server) syncSales(ctx context.Context, iid int32) error {
 	return s.save(ctx, config)
 }
 
-func (s *Server) updateSales(ctx context.Context, sale *pb.Sale) error {
+func (s *Server) updateSales(sale *pb.Sale) error {
 	cancel, err := s.ElectKey(fmt.Sprintf("%v", sale.GetInstanceId()))
 	if err != nil {
 		return err
 	}
 	defer cancel()
 	s.Log(fmt.Sprintf("Running sale update: %v", sale.GetInstanceId()))
-	time.Sleep(time.Second * 5)
+
 	if !sale.OnHold {
+		ctx, cancel := utils.ManualContext("updatesales", "updatesales", time.Minute, false)
+		defer cancel()
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price != 499 && sale.Price != 200 { //two weeks
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
