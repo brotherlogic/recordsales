@@ -2,17 +2,39 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"golang.org/x/net/context"
 
 	gdpb "github.com/brotherlogic/godiscogs"
+	"github.com/brotherlogic/goserver/utils"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
 )
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
 	return s.testing
+}
+
+func (s *Server) runSales() {
+	for true {
+		ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
+		config, err := s.load(ctx)
+		cancel()
+		if err != nil {
+			s.Log(fmt.Sprintf("Unable to load config: %v", err))
+			time.Sleep(time.Minute)
+			continue
+		}
+
+		sort.SliceStable(config.Sales, func(i, j int) bool {
+			return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
+		})
+
+		s.Log(fmt.Sprintf("Running update for %v -> %v", config.Sales[0], config.Sales[1]))
+		time.Sleep(time.Minute)
+	}
 }
 
 func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc.Record, error) {
