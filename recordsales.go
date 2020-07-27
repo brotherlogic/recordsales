@@ -231,14 +231,15 @@ var (
 	})
 )
 
-func (s *Server) setOldest(sales []*pb.Sale) {
+func (s *Server) setOldest(salesIn []*pb.Sale) {
 	lowest := time.Now().Unix()
-	for _, sale := range sales {
+	for _, sale := range salesIn {
 		if sale.GetLastUpdateTime() < lowest && sale.GetLastUpdateTime() > 0 {
 			lowest = sale.GetLastUpdateTime()
 		}
 	}
 	nextUpdateTime.Set(float64(lowest))
+	sales.Set(float64(len(salesIn)))
 }
 
 func main() {
@@ -265,7 +266,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to read sales: %v", err)
 	}
-	sales.Set(float64(len(config.GetSales())))
 	server.setOldest(config.GetSales())
 
 	go server.runSales()
