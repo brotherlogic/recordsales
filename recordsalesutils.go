@@ -26,6 +26,7 @@ func (s *Server) runSales() {
 			time.Sleep(time.Minute)
 			continue
 		}
+		sales.Set(float64(len(config.GetSales())))
 
 		sort.SliceStable(config.Sales, func(i, j int) bool {
 			return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
