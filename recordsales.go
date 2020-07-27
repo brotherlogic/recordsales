@@ -26,6 +26,7 @@ type getter interface {
 	updatePrice(ctx context.Context, instanceID, price int32) error
 	updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category)
 	expireSale(ctx context.Context, instanceID int32) error
+	loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error)
 }
 
 type prodGetter struct {
@@ -74,6 +75,23 @@ func (p *prodGetter) updateCategory(ctx context.Context, instanceID int32, categ
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	update := &pbrc.UpdateRecordRequest{Reason: "RecordSales-updateCategory", Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{Category: category}}}
 	client.UpdateRecord(ctx, update)
+}
+
+func (p *prodGetter) loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error) {
+	conn, err := p.dial("recordcollection")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := rcpb.NewRecordCollectionServiceClient(conn)
+	resp, err := client.GetRecord(ctx, &rcpb.GetRecordRequest{InstanceId: instanceID})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.GetRecord(), err
 }
 
 func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
