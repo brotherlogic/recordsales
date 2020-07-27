@@ -137,42 +137,45 @@ func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
 		}
 	}
 
-	s.save(ctx)
+	s.save(ctx, config)
 	return time.Now().Add(time.Hour), nil
 }
 
-func (s *Server) updateSales(ctx context.Context) (time.Time, error) {
+func (s *Server) updateSales(ctx context.Context) error {
 	config, err := s.load(ctx)
 	if err != nil {
-		return time.Now().Add(time.Hour), err
+		return err
 	}
 
 	s.updates++
 	for _, sale := range config.Sales {
-		if !sale.OnHold {
-			if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*8 && sale.Price != 499 && sale.Price != 200 { //two months
-				sale.LastUpdateTime = time.Now().Unix()
-				newPrice := sale.Price - 500
-				if newPrice < 499 {
-					newPrice = 499
-				}
-				s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
-				err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
-				s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
-				if err != nil {
-					return time.Now().Add(time.Hour), err
-				}
-			} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
-				s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
-				s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
-				err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
-				if err != nil {
-					return time.Now().Add(time.Hour), err
+		if sale.InstanceId == 301534855 {
+			s.Log(fmt.Sprintf("Running sale update"))
+			time.Sleep(time.Second * 5)
+			if !sale.OnHold {
+				if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price != 499 && sale.Price != 200 { //two weeks
+					sale.LastUpdateTime = time.Now().Unix()
+					newPrice := sale.Price - 500
+					if newPrice < 499 {
+						newPrice = 499
+					}
+					s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
+					err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
+					s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
+					if err != nil {
+						return err
+					}
+				} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
+					s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
+					s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
+					err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
 	}
 	config.LastSaleRun = time.Now().Unix()
-	s.save(ctx)
-	return time.Now().Add(time.Hour), nil
+	return s.save(ctx, config)
 }

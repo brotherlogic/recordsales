@@ -129,8 +129,8 @@ func Init() *Server {
 	return s
 }
 
-func (s *Server) save(ctx context.Context) {
-	s.KSclient.Save(ctx, KEY, s.config)
+func (s *Server) save(ctx context.Context, config *pb.Config) error {
+	return s.KSclient.Save(ctx, KEY, config)
 }
 
 func (s *Server) load(ctx context.Context) (*pb.Config, error) {
@@ -160,7 +160,6 @@ func (s *Server) ReportHealth() bool {
 
 // Shutdown the server
 func (s *Server) Shutdown(ctx context.Context) error {
-	s.save(ctx)
 	return nil
 }
 
@@ -217,7 +216,7 @@ var (
 func (s *Server) setOldest(sales []*pb.Sale) {
 	lowest := time.Now().Unix()
 	for _, sale := range sales {
-		if sale.GetLastUpdateTime() < lowest {
+		if sale.GetLastUpdateTime() < lowest && sale.GetLastUpdateTime() > 0 {
 			lowest = sale.GetLastUpdateTime()
 		}
 	}
@@ -250,6 +249,11 @@ func main() {
 	}
 	sales.Set(float64(len(config.GetSales())))
 	server.setOldest(config.GetSales())
+
+	ctx, cancel = utils.ManualContext("recordsales", "recordsales", time.Minute, true)
+	err = server.updateSales(ctx)
+	cancel()
+	server.Log(fmt.Sprintf("Ran update: %v", err))
 
 	fmt.Printf("%v", server.Serve())
 }
