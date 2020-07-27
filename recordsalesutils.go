@@ -180,8 +180,8 @@ func (s *Server) updateSales(ctx context.Context, sale *pb.Sale) error {
 			if newPrice < 499 {
 				newPrice = 499
 			}
-			s.Log(fmt.Sprintf("Updating %v -> %v", sale.InstanceId, newPrice))
 			err := s.getter.updatePrice(ctx, sale.InstanceId, newPrice)
+			s.Log(fmt.Sprintf("Updating %v -> %v [%v]", sale.InstanceId, newPrice, err))
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
 			if err != nil {
 				return err
