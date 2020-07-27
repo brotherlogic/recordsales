@@ -8,6 +8,7 @@ import (
 	"github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 
+	pbd "github.com/brotherlogic/discovery/proto"
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
@@ -55,6 +56,7 @@ func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
 	s.SkipIssue = true
+	s.Registry = &pbd.RegistryEntry{}
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	s.GoServer.KSclient.Save(context.Background(), KEY, &pb.Config{})
 	s.getter = &testGetter{}
@@ -146,7 +148,7 @@ func TestUpdateSalesWithFail(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background())
+	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	if err == nil {
 		t.Errorf("Update did not fail")
 	}
@@ -157,7 +159,7 @@ func TestUpdateSales(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background())
+	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
@@ -176,7 +178,7 @@ func TestUpdateSalesWhenOnHold(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background())
+	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
@@ -191,7 +193,7 @@ func TestUpdateSalesWithStale(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
 	s.save(context.Background(), config)
-	s.updateSales(context.Background())
+	s.updateSales(context.Background(), &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
 
 	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
 		t.Errorf("This test needs updating: %v", s.config)
@@ -204,7 +206,7 @@ func TestUpdateSalesWithStaleFail(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
 	s.save(context.Background(), config)
-	err := s.updateSales(context.Background())
+	err := s.updateSales(context.Background(), &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
 
 	if err == nil {
 		t.Errorf("Test did not fail")
@@ -298,7 +300,7 @@ func TestFails(t *testing.T) {
 		t.Errorf("Should have failed")
 	}
 
-	err = s.updateSales(context.Background())
+	err = s.updateSales(context.Background(), &pb.Sale{})
 	if err == nil {
 		t.Errorf("Should have failed")
 	}

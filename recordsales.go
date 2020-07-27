@@ -250,11 +250,6 @@ func main() {
 	sales.Set(float64(len(config.GetSales())))
 	server.setOldest(config.GetSales())
 
-	ctx, cancel = utils.ManualContext("recordsales", "recordsales", time.Minute, true)
-	err = server.updateSales(ctx)
-	cancel()
-	server.Log(fmt.Sprintf("Ran update: %v", err))
-
 	go server.runSales()
 
 	fmt.Printf("%v", server.Serve())
