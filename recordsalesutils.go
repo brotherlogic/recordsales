@@ -37,9 +37,9 @@ func (s *Server) runSales() {
 
 		//Next update time
 		nut := time.Unix(config.Sales[1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
-		stime := time.Now().Sub(nut)
+		stime := nut.Sub(time.Now())
 		time.Sleep(time.Second * 2)
-		s.Log(fmt.Sprintf("Sleeping for %v", stime))
+		s.Log(fmt.Sprintf("Sleeping for %v from %v", stime, time.Unix(config.Sales[1].GetLastUpdateTime(), 0)))
 		if stime < 0 {
 			time.Sleep(time.Minute)
 		} else {
