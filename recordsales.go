@@ -8,11 +8,14 @@ import (
 	"time"
 
 	"github.com/brotherlogic/goserver"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbg "github.com/brotherlogic/goserver/proto"
+	"github.com/brotherlogic/goserver/utils"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	rcpb "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
@@ -130,18 +133,18 @@ func (s *Server) save(ctx context.Context) {
 	s.KSclient.Save(ctx, KEY, s.config)
 }
 
-func (s *Server) load(ctx context.Context) error {
+func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 	config := &pb.Config{}
 	data, _, err := s.KSclient.Read(ctx, KEY, config)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	s.config = data.(*pb.Config)
+	config = data.(*pb.Config)
 
-	s.config.Archives = s.trimList(ctx, s.config.Archives)
-	return nil
+	config.Archives = s.trimList(ctx, s.config.Archives)
+	return config, nil
 }
 
 // DoRegister does RPC registration
@@ -163,11 +166,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // Mote promotes/demotes this server
 func (s *Server) Mote(ctx context.Context, master bool) error {
-	if master {
-		err := s.load(ctx)
-		return err
-	}
-
 	return nil
 }
 
@@ -205,15 +203,25 @@ func (s *Server) GetState() []*pbg.State {
 	}
 }
 
-func (s *Server) checkSaleTime(ctx context.Context) (time.Time, error) {
-	err := s.load(ctx)
-	if err != nil {
-		return time.Now().Add(time.Hour), err
+var (
+	sales = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "recordsales_sales",
+		Help: "The number of sales",
+	})
+	nextUpdateTime = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "recordsales_update_time",
+		Help: "The number of sales",
+	})
+)
+
+func (s *Server) setOldest(sales []*pb.Sale) {
+	lowest := time.Now().Unix()
+	for _, sale := range sales {
+		if sale.GetLastUpdateTime() < lowest {
+			lowest = sale.GetLastUpdateTime()
+		}
 	}
-	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Hour*24*7 {
-		s.RaiseIssue("Sale Problem", fmt.Sprintf("Last sale run was %v", time.Unix(s.config.LastSaleRun, 0)))
-	}
-	return time.Now().Add(time.Hour), nil
+	nextUpdateTime.Set(float64(lowest))
 }
 
 func main() {
@@ -233,6 +241,15 @@ func main() {
 	if err != nil {
 		return
 	}
+
+	ctx, cancel := utils.ManualContext("recordsales", "recordsales", time.Minute, true)
+	config, err := server.load(ctx)
+	cancel()
+	if err != nil {
+		log.Fatalf("Unable to read sales: %v", err)
+	}
+	sales.Set(float64(len(config.GetSales())))
+	server.setOldest(config.GetSales())
 
 	fmt.Printf("%v", server.Serve())
 }

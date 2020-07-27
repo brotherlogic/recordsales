@@ -68,7 +68,7 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 }
 
 func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
-	err := s.load(ctx)
+	config, err := s.load(ctx)
 	if err != nil {
 		return time.Now().Add(time.Hour), err
 	}
@@ -87,7 +87,7 @@ func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
 	for _, rec := range records {
 		if rec.GetMetadata().SaleId > 0 {
 			found := false
-			for _, sale := range s.config.Sales {
+			for _, sale := range config.Sales {
 				if sale.InstanceId == rec.GetRelease().InstanceId {
 					found = true
 					if !rec.GetMetadata().SaleDirty {
@@ -97,14 +97,14 @@ func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
 							Price:          sale.Price,
 						}
 						seen := false
-						for _, arch := range s.config.Archives {
+						for _, arch := range config.Archives {
 							if arch.InstanceId == oldSale.InstanceId && arch.Price == oldSale.Price {
 								seen = true
 							}
 						}
 						if !seen {
 							s.Log(fmt.Sprintf("NEW SALE: %v", oldSale))
-							s.config.Archives = append(s.config.Archives, oldSale)
+							config.Archives = append(config.Archives, oldSale)
 						}
 						sale.Price = rec.GetMetadata().SalePrice
 						if sale.Price == 0 {
@@ -120,15 +120,15 @@ func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
 			}
 
 			if !found {
-				s.config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
+				config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 			}
 
 			//Remove record if it's sold
 			if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
 				i := 0
-				for i < len(s.config.Sales) {
-					if s.config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
-						s.config.Sales = append(s.config.Sales[:i], s.config.Sales[i+1:]...)
+				for i < len(config.Sales) {
+					if config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
+						config.Sales = append(config.Sales[:i], config.Sales[i+1:]...)
 					}
 					i++
 				}
@@ -142,13 +142,13 @@ func (s *Server) syncSales(ctx context.Context) (time.Time, error) {
 }
 
 func (s *Server) updateSales(ctx context.Context) (time.Time, error) {
-	err := s.load(ctx)
+	config, err := s.load(ctx)
 	if err != nil {
 		return time.Now().Add(time.Hour), err
 	}
 
 	s.updates++
-	for _, sale := range s.config.Sales {
+	for _, sale := range config.Sales {
 		if !sale.OnHold {
 			if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*8 && sale.Price != 499 && sale.Price != 200 { //two months
 				sale.LastUpdateTime = time.Now().Unix()
@@ -172,7 +172,7 @@ func (s *Server) updateSales(ctx context.Context) (time.Time, error) {
 			}
 		}
 	}
-	s.config.LastSaleRun = time.Now().Unix()
+	config.LastSaleRun = time.Now().Unix()
 	s.save(ctx)
 	return time.Now().Add(time.Hour), nil
 }
