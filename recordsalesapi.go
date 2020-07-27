@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	pbrc "github.com/brotherlogic/recordcollection/proto"
@@ -49,5 +50,6 @@ func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb
 //ClientUpdate forces a move
 func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest) (*pbrc.ClientUpdateResponse, error) {
 	//Place holder
+	s.Log(fmt.Sprintf("UPDATE %v", in))
 	return &pbrc.ClientUpdateResponse{}, nil
 }
