@@ -255,5 +255,7 @@ func main() {
 	cancel()
 	server.Log(fmt.Sprintf("Ran update: %v", err))
 
+	go server.runSales()
+
 	fmt.Printf("%v", server.Serve())
 }
