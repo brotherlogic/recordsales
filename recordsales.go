@@ -30,11 +30,11 @@ type getter interface {
 }
 
 type prodGetter struct {
-	dial func(server string) (*grpc.ClientConn, error)
+	dial func(ctx context.Context, server string) (*grpc.ClientConn, error)
 }
 
 func (p *prodGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, error) {
-	conn, err := p.dial("recordcollection")
+	conn, err := p.dial(ctx, "recordcollection")
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (p *prodGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, erro
 }
 
 func (p *prodGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
-	conn, err := p.dial("recordcollection")
+	conn, err := p.dial(ctx, "recordcollection")
 	if err != nil {
 		return
 	}
@@ -78,7 +78,7 @@ func (p *prodGetter) updateCategory(ctx context.Context, instanceID int32, categ
 }
 
 func (p *prodGetter) loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error) {
-	conn, err := p.dial("recordcollection")
+	conn, err := p.dial(ctx, "recordcollection")
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (p *prodGetter) loadRecord(ctx context.Context, instanceID int32) (*pbrc.Re
 }
 
 func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
-	conn, err := p.dial("recordcollection")
+	conn, err := p.dial(ctx, "recordcollection")
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (p *prodGetter) updatePrice(ctx context.Context, instanceID, price int32) e
 }
 
 func (p *prodGetter) expireSale(ctx context.Context, instanceID int32) error {
-	conn, err := p.dial("recordcollection")
+	conn, err := p.dial(ctx, "recordcollection")
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func Init() *Server {
 		int64(0),
 		true,
 	}
-	s.getter = &prodGetter{s.DialMaster}
+	s.getter = &prodGetter{s.FDialServer}
 	return s
 }
 
