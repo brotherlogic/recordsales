@@ -35,6 +35,10 @@ func (t *testGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, erro
 	return t.records, nil
 }
 
+func (t *testGetter) loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error) {
+	return &pbrc.Record{}, nil
+}
+
 func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
 	if t.fail {
 		return fmt.Errorf("Built to fail")
@@ -70,7 +74,7 @@ func TestSyncSales(t *testing.T) {
 	s.testing = true
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 
-	s.syncSales(context.Background())
+	s.syncSales(context.Background(), 177077893)
 
 	found := false
 	for _, sale := range s.config.Sales {
@@ -91,7 +95,7 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL, LastSalePriceUpdate: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
 	s.save(context.Background(), config)
 
-	s.syncSales(context.Background())
+	s.syncSales(context.Background(), 177077893)
 
 	found := false
 	for _, sale := range s.config.Sales {
@@ -114,7 +118,7 @@ func TestSyncSalesWithArchive(t *testing.T) {
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 	s.save(context.Background(), config)
 
-	s.syncSales(context.Background())
+	s.syncSales(context.Background(), 177077893)
 
 	if len(s.config.Archives) != 1 {
 		t.Errorf("Too much archive: %v", s.config.Archives)
@@ -124,7 +128,7 @@ func TestSyncSalesWithArchive(t *testing.T) {
 func TestSyncSalesWithGetFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
-	s.syncSales(context.Background())
+	s.syncSales(context.Background(), 177077893)
 
 	if len(s.config.Sales) > 0 {
 		t.Errorf("Sales have synced somehow: %v", s.config)
@@ -135,7 +139,7 @@ func TestSyncSalesWithExpireFail(t *testing.T) {
 	s := getTestServer()
 	s.testing = false
 	s.getter = &testGetter{failExpire: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7"}}}}}}}
-	s.syncSales(context.Background())
+	s.syncSales(context.Background(), 177077893)
 
 	if len(s.config.Sales) > 0 {
 		t.Errorf("Sales have synced somehow: %v", s.config)
@@ -224,7 +228,7 @@ func TestRemoveRecordOnceSold(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893})
 	s.save(context.Background(), config)
-	s.syncSales(context.Background())
+	s.syncSales(context.Background(), 177077893)
 
 	if len(s.config.Sales) != 0 && len(s.config.Archives) != 1 {
 		t.Errorf("Record sold has not been removed and added to archive")
@@ -295,7 +299,7 @@ func TestFails(t *testing.T) {
 	s := getTestServer()
 	s.GoServer.KSclient.Fail = true
 
-	_, err := s.syncSales(context.Background())
+	err := s.syncSales(context.Background(), 1)
 	if err == nil {
 		t.Errorf("Should have failed")
 	}
