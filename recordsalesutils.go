@@ -142,13 +142,13 @@ func (s *Server) syncSales(ctx context.Context, iid int32) error {
 		}
 	}
 
-	if !found && rec.GetMetadata().GetSaleId() > 0 && rec.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_LISTED_TO_SELL {
+	if !found && rec.GetMetadata().GetSaleId() > 0 && (rec.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_LISTED_TO_SELL) {
 		s.Log(fmt.Sprintf("NEW SALE: %v", rec.GetRelease().GetInstanceId()))
 		config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 	}
 
 	//Remove record if it's sold
-	if found && rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
+	if found && rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL {
 		s.Log(fmt.Sprintf("REMOVING %v -> %v, %v", rec.GetRelease().InstanceId, found, rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE))
 		i := 0
 		for i < len(config.Sales) {
