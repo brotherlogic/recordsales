@@ -19,19 +19,19 @@ func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
 
 func (s *Server) runSales() {
 	for true {
-		s.runElection()
+		t := s.runElection()
 
 		//Wait between sale runs
-		time.Sleep(time.Minute)
+		time.Sleep(t)
 	}
 }
 
-func (s *Server) runElection() {
+func (s *Server) runElection() time.Duration {
 	ecancel, err := s.Elect()
 	defer ecancel()
 	if err != nil {
 		s.Log(fmt.Sprintf("Unable to elect: %v", err))
-		return
+		return time.Minute
 	}
 
 	ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
@@ -39,7 +39,7 @@ func (s *Server) runElection() {
 	cancel()
 	if err != nil {
 		s.Log(fmt.Sprintf("Unable to load config: %v", err))
-		return
+		return time.Minute
 	}
 	s.setOldest(config.GetSales())
 
@@ -47,17 +47,25 @@ func (s *Server) runElection() {
 		return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
 	})
 
-	err = s.updateSales(config.Sales[0])
+	for i := range config.Sales {
+		if time.Now().After(time.Unix(config.Sales[i].GetNextProcessTime(), 0)) {
+			err = s.updateSales(config.Sales[i])
+			config.Sales[i].NextProcessTime = time.Now().Add(time.Hour).Unix()
 
-	//Next update time
-	nut := time.Unix(config.Sales[1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
-	stime := nut.Sub(time.Now())
-	s.Log(fmt.Sprintf("Sleeping for %v from %v", stime, time.Unix(config.Sales[1].GetLastUpdateTime(), 0)))
-	if stime < 0 {
-		time.Sleep(time.Minute)
-	} else {
-		time.Sleep(stime)
+			ctx, cancel := utils.ManualContext("cs", "cs", time.Minute, true)
+			s.save(ctx, config)
+			cancel()
+
+			//Next update time
+			nut := time.Unix(config.Sales[i+1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
+			stime := nut.Sub(time.Now())
+			if stime > 0 {
+				return stime
+			}
+		}
 	}
+
+	return time.Minute
 }
 
 func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc.Record, error) {
