@@ -110,55 +110,52 @@ func (s *Server) syncSales(ctx context.Context, iid int32) error {
 		return err
 	}
 
-	if rec.GetMetadata().SaleId > 0 {
-		found := false
-		for _, sale := range config.Sales {
-			if sale.InstanceId == rec.GetRelease().InstanceId {
-				found = true
-				if !rec.GetMetadata().SaleDirty {
-					oldSale := &pb.Sale{
-						InstanceId:     sale.InstanceId,
-						LastUpdateTime: sale.LastUpdateTime,
-						Price:          sale.Price,
-					}
-					seen := false
-					for _, arch := range config.Archives {
-						if arch.InstanceId == oldSale.InstanceId && arch.Price == oldSale.Price {
-							seen = true
-						}
-					}
-					if !seen {
-						s.Log(fmt.Sprintf("NEW SALE: %v", oldSale))
-						config.Archives = append(config.Archives, oldSale)
-					}
-					sale.Price = rec.GetMetadata().SalePrice
-					if sale.Price == 0 {
-						sale.Price = rec.GetMetadata().GetCurrentSalePrice()
-					}
-					sale.LastUpdateTime = rec.GetMetadata().LastSalePriceUpdate
-					sale.OnHold = rec.GetMetadata().GetSaleState() == gdpb.SaleState_EXPIRED
-
+	found := false
+	for _, sale := range config.Sales {
+		if sale.InstanceId == rec.GetRelease().InstanceId {
+			found = true
+			if !rec.GetMetadata().SaleDirty {
+				oldSale := &pb.Sale{
+					InstanceId:     sale.InstanceId,
+					LastUpdateTime: sale.LastUpdateTime,
+					Price:          sale.Price,
 				}
-				break
+				seen := false
+				for _, arch := range config.Archives {
+					if arch.InstanceId == oldSale.InstanceId && arch.Price == oldSale.Price {
+						seen = true
+					}
+				}
+				if !seen {
+					s.Log(fmt.Sprintf("NEW SALE: %v", oldSale))
+					config.Archives = append(config.Archives, oldSale)
+				}
+				sale.Price = rec.GetMetadata().SalePrice
+				if sale.Price == 0 {
+					sale.Price = rec.GetMetadata().GetCurrentSalePrice()
+				}
+				sale.LastUpdateTime = rec.GetMetadata().LastSalePriceUpdate
+				sale.OnHold = rec.GetMetadata().GetSaleState() == gdpb.SaleState_EXPIRED
 
 			}
-		}
+			break
 
-		if !found {
-			config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 		}
+	}
 
-		//Remove record if it's sold
-		if rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
-			i := 0
-			for i < len(config.Sales) {
-				if config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
-					config.Sales = append(config.Sales[:i], config.Sales[i+1:]...)
-				}
-				i++
+	if !found && rec.GetMetadata().GetSaleId() > 0 {
+		config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
+	}
+
+	//Remove record if it's sold
+	if found && rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
+		i := 0
+		for i < len(config.Sales) {
+			if config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
+				config.Sales = append(config.Sales[:i], config.Sales[i+1:]...)
 			}
+			i++
 		}
-
 	}
 
 	return s.save(ctx, config)
