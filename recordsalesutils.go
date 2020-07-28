@@ -148,8 +148,8 @@ func (s *Server) syncSales(ctx context.Context, iid int32) error {
 	}
 
 	//Remove record if it's sold
-	s.Log(fmt.Sprintf("REMOVING %v -> %v, %v", rec.GetRelease().InstanceId, found, rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE))
 	if found && rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE {
+		s.Log(fmt.Sprintf("REMOVING %v -> %v, %v", rec.GetRelease().InstanceId, found, rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE))
 		i := 0
 		for i < len(config.Sales) {
 			if config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
