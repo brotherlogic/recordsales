@@ -19,31 +19,44 @@ func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
 
 func (s *Server) runSales() {
 	for true {
-		ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
-		config, err := s.load(ctx)
-		cancel()
-		if err != nil {
-			s.Log(fmt.Sprintf("Unable to load config: %v", err))
-			time.Sleep(time.Minute)
-			continue
-		}
-		s.setOldest(config.GetSales())
+		s.runElection()
 
-		sort.SliceStable(config.Sales, func(i, j int) bool {
-			return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
-		})
+		//Wait between sale runs
+		time.Sleep(time.Minute)
+	}
+}
 
-		err = s.updateSales(config.Sales[0])
+func (s *Server) runElection() {
+	ecancel, err := s.Elect()
+	defer ecancel()
+	if err != nil {
+		s.Log(fmt.Sprintf("Unable to elect: %v", err))
+		return
+	}
 
-		//Next update time
-		nut := time.Unix(config.Sales[1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
-		stime := nut.Sub(time.Now())
-		s.Log(fmt.Sprintf("Sleeping for %v from %v", stime, time.Unix(config.Sales[1].GetLastUpdateTime(), 0)))
-		if stime < 0 {
-			time.Sleep(time.Minute)
-		} else {
-			time.Sleep(stime)
-		}
+	ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
+	config, err := s.load(ctx)
+	cancel()
+	if err != nil {
+		s.Log(fmt.Sprintf("Unable to load config: %v", err))
+		return
+	}
+	s.setOldest(config.GetSales())
+
+	sort.SliceStable(config.Sales, func(i, j int) bool {
+		return config.Sales[i].GetLastUpdateTime() < config.Sales[j].GetLastUpdateTime()
+	})
+
+	err = s.updateSales(config.Sales[0])
+
+	//Next update time
+	nut := time.Unix(config.Sales[1].GetLastUpdateTime(), 0).Add(time.Hour * 24 * 7)
+	stime := nut.Sub(time.Now())
+	s.Log(fmt.Sprintf("Sleeping for %v from %v", stime, time.Unix(config.Sales[1].GetLastUpdateTime(), 0)))
+	if stime < 0 {
+		time.Sleep(time.Minute)
+	} else {
+		time.Sleep(stime)
 	}
 }
 
