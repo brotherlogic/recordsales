@@ -142,7 +142,7 @@ func (s *Server) syncSales(ctx context.Context, iid int32) error {
 		}
 	}
 
-	if !found && rec.GetMetadata().GetSaleId() > 0 {
+	if !found && rec.GetMetadata().GetSaleId() > 0 && rec.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_LISTED_TO_SELL {
 		s.Log(fmt.Sprintf("NEW SALE: %v", rec.GetRelease().GetInstanceId()))
 		config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 	}
