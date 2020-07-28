@@ -40,7 +40,7 @@ func (s *Server) runSales() {
 		stime := nut.Sub(time.Now())
 		s.Log(fmt.Sprintf("Sleeping for %v from %v", stime, time.Unix(config.Sales[1].GetLastUpdateTime(), 0)))
 		if stime < 0 {
-			time.Sleep(time.Minute * 5)
+			time.Sleep(time.Minute * 15)
 		} else {
 			time.Sleep(stime)
 		}
