@@ -169,6 +169,9 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 	}
 	defer cancel()
 
+	time.Sleep(time.Second * 2)
+	s.Log(fmt.Sprintf("Running update for %v", sale))
+	time.Sleep(time.Second * 2)
 	if !sale.OnHold {
 		ctx, cancel := utils.ManualContext("updatesales", "updatesales", time.Minute, false)
 		defer cancel()
