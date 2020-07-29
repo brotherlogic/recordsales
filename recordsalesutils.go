@@ -22,6 +22,7 @@ func (s *Server) runSales() {
 		t := s.runElection()
 
 		//Wait between sale runs
+		s.Log(fmt.Sprintf("Sleeping for %v", t))
 		time.Sleep(t)
 	}
 }
