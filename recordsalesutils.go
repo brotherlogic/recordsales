@@ -31,7 +31,7 @@ func (s *Server) runElection() time.Duration {
 	defer ecancel()
 	if err != nil {
 		s.Log(fmt.Sprintf("Unable to elect: %v", err))
-		return time.Minute
+		return time.Minute * 5
 	}
 
 	ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
@@ -39,7 +39,7 @@ func (s *Server) runElection() time.Duration {
 	cancel()
 	if err != nil {
 		s.Log(fmt.Sprintf("Unable to load config: %v", err))
-		return time.Minute
+		return time.Minute * 5
 	}
 	s.setOldest(config.GetSales())
 
@@ -62,11 +62,11 @@ func (s *Server) runElection() time.Duration {
 			if stime > 0 {
 				return stime
 			}
-			return time.Minute
+			return time.Minute * 5
 		}
 	}
 
-	return time.Minute
+	return time.Minute * 5
 }
 
 func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc.Record, error) {
