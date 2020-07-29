@@ -62,6 +62,7 @@ func (s *Server) runElection() time.Duration {
 			if stime > 0 {
 				return stime
 			}
+			return time.Minute
 		}
 	}
 
