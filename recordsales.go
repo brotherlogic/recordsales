@@ -12,6 +12,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pbgd "github.com/brotherlogic/godiscogs"
 	pbg "github.com/brotherlogic/goserver/proto"
@@ -271,7 +273,12 @@ func main() {
 	ctx, cancel := utils.ManualContext("recordsales", "recordsales", time.Minute, true)
 	config, err := server.load(ctx)
 	cancel()
-	if err != nil {
+	code := status.Convert(err).Code()
+	if code == codes.NotFound {
+		// Silent quit if we can't read sales because of missing keystore
+		return
+	}
+	if code != codes.OK {
 		log.Fatalf("Unable to read sales: %v", err)
 	}
 	server.setOldest(config.GetSales())
