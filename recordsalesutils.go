@@ -209,6 +209,7 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_LISTED_TO_SELL)
 			if err != nil {
 				return err
+
 			}
 		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
 			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
