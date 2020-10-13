@@ -198,7 +198,7 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 	if !sale.OnHold {
 		ctx, cancel := utils.ManualContext("updatesales", "updatesales", time.Minute, false)
 		defer cancel()
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price != 499 && sale.Price != 200 { //two weeks
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price > 499 { //two weeks
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
 			if newPrice < 499 {
@@ -211,7 +211,7 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 				return err
 
 			}
-		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && (sale.Price == 499 || sale.Price == 498) { // one month
+		} else if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*4 && sale.Price <= 499 && sale.Price > 200 { // one month
 			s.Log(fmt.Sprintf("[%v] STALE for %v", sale.InstanceId, time.Now().Sub(time.Unix(sale.LastUpdateTime, 0))))
 			s.getter.updateCategory(ctx, sale.InstanceId, pbrc.ReleaseMetadata_STALE_SALE)
 			err := s.getter.updatePrice(ctx, sale.InstanceId, 200)
