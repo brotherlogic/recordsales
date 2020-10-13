@@ -40,11 +40,10 @@ func getRecord(ctx context.Context, instanceID int32) *pbrc.Record {
 }
 
 func main() {
-	host, port, err := utils.Resolve("recordsales", "sales-cli")
-	if err != nil {
-		log.Fatalf("Unable to reach sales: %v", err)
-	}
-	conn, err := grpc.Dial(host+":"+strconv.Itoa(int(port)), grpc.WithInsecure())
+	ctx, cancel := utils.BuildContext("recordsales-cli-"+os.Args[1], "recordsales-cli")
+	defer cancel()
+
+	conn, err := utils.LFDialServer(ctx, "recordsales")
 	defer conn.Close()
 
 	if err != nil {
@@ -52,8 +51,6 @@ func main() {
 	}
 
 	client := pb.NewSaleServiceClient(conn)
-	ctx, cancel := utils.BuildContext("recordsales-cli-"+os.Args[1], "recordsales-cli")
-	defer cancel()
 
 	switch os.Args[1] {
 	case "list":
@@ -78,6 +75,12 @@ func main() {
 		for _, r := range res.GetSales() {
 			fmt.Printf("%v - %v\n", time.Unix(r.GetLastUpdateTime(), 0), r.GetPrice())
 		}
+	case "force":
+		val, _ := strconv.Atoi(os.Args[2])
+		client := pbrc.NewClientUpdateServiceClient(conn)
+		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
+
+		fmt.Printf("%v and %v\n", resp, err)
 	default:
 		fmt.Sprintf("Unknown command\n")
 	}
