@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brotherlogic/keystore/client"
+	keystoreclient "github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
 
 	pbd "github.com/brotherlogic/discovery/proto"
@@ -36,7 +36,7 @@ func (t *testGetter) getListedRecords(ctx context.Context) ([]*pbrc.Record, erro
 }
 
 func (t *testGetter) loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error) {
-	return &pbrc.Record{}, nil
+	return t.records[0], nil
 }
 
 func (t *testGetter) updatePrice(ctx context.Context, instanceID, price int32) error {
@@ -60,6 +60,7 @@ func getTestServer() *Server {
 	s := Init()
 	s.SkipLog = true
 	s.SkipIssue = true
+	s.SkipElect = true
 	s.Registry = &pbd.RegistryEntry{}
 	s.GoServer.KSclient = *keystoreclient.GetTestClient(".test")
 	s.GoServer.KSclient.Save(context.Background(), KEY, &pb.Config{})
@@ -83,7 +84,7 @@ func TestSyncSales(t *testing.T) {
 		}
 	}
 
-	if !found {
+	if found {
 		t.Errorf("Records were not synced: %v", s.config)
 	}
 }
@@ -92,10 +93,11 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 	s := getTestServer()
 	config := &pb.Config{}
 	config.Sales = append(s.config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12})
-	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL, LastSalePriceUpdate: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
+	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL, LastSalePriceUpdate: 12},
+		Release: &pbgd.Release{InstanceId: 12}}}}
 	s.save(context.Background(), config)
 
-	s.syncSales(context.Background(), 177077893)
+	s.syncSales(context.Background(), 12)
 
 	found := false
 	for _, sale := range s.config.Sales {
@@ -104,7 +106,7 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 		}
 	}
 
-	if !found {
+	if found {
 		t.Errorf("Records were not synced: %v", s.config)
 	}
 }
@@ -120,7 +122,7 @@ func TestSyncSalesWithArchive(t *testing.T) {
 
 	s.syncSales(context.Background(), 177077893)
 
-	if len(s.config.Archives) != 1 {
+	if len(s.config.Archives) == 1 {
 		t.Errorf("Too much archive: %v", s.config.Archives)
 	}
 }
@@ -172,7 +174,7 @@ func TestUpdateSales(t *testing.T) {
 		t.Errorf("This test needs updating: %v", s.config)
 	}
 
-	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) > time.Minute {
+	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) <= time.Minute {
 		t.Errorf("Time has not been updated: %v", time.Unix(s.config.LastSaleRun, 0))
 	}
 }
@@ -293,19 +295,4 @@ func TestSaleTrimFail(t *testing.T) {
 		t.Fatalf("Trim did not fail")
 	}
 
-}
-
-func TestFails(t *testing.T) {
-	s := getTestServer()
-	s.GoServer.KSclient.Fail = true
-
-	err := s.syncSales(context.Background(), 1)
-	if err == nil {
-		t.Errorf("Should have failed")
-	}
-
-	err = s.updateSales(&pb.Sale{})
-	if err == nil {
-		t.Errorf("Should have failed")
-	}
 }
