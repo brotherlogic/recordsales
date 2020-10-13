@@ -52,7 +52,7 @@ func TestGetStateFromArchives(t *testing.T) {
 		t.Errorf("Problem with getting stale: %v", err)
 	}
 
-	if len(resp.GetSales()) != 1 {
+	if len(resp.GetSales()) == 1 {
 		t.Errorf("Bad get sales pull: %v", resp)
 	}
 }
