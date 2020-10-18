@@ -219,12 +219,12 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 				return err
 			}
 		} else {
-			/*We've done nothing to this entry - let's just trigger an update to refresh the cache
+			//We've done nothing to this entry - let's just trigger an update to refresh the cache
 			s.Log(fmt.Sprintf("NO-OP UPDATE %v", sale))
 			err := s.getter.updatePrice(ctx, sale.InstanceId, sale.Price)
 			if err != nil {
 				return err
-			}*/
+			}
 		}
 	}
 	return nil
