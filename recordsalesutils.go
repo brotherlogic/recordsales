@@ -198,7 +198,7 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 	if !sale.OnHold {
 		ctx, cancel := utils.ManualContext("updatesales", "updatesales", time.Minute, false)
 		defer cancel()
-		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7*2 && sale.Price > 499 { //two weeks
+		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price > 499 { //one week
 			sale.LastUpdateTime = time.Now().Unix()
 			newPrice := sale.Price - 500
 			if newPrice < 499 {
