@@ -154,7 +154,7 @@ func TestUpdateSalesWithFail(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	s.save(context.Background(), config)
-	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
+	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 800})
 	if err == nil {
 		t.Errorf("Update did not fail")
 	}
@@ -165,7 +165,7 @@ func TestUpdateSales(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
 	s.save(context.Background(), config)
-	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
+	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 800})
 	if err != nil {
 		t.Errorf("Update failed: %v", err)
 	}
