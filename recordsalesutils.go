@@ -14,7 +14,7 @@ import (
 )
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
-	return s.testing
+	return false //s.testing
 }
 
 func (s *Server) runSales() {
