@@ -283,7 +283,8 @@ func main() {
 	}
 	server.setOldest(config.GetSales())
 
-	go server.runSales()
+	// Stop updating sales
+	//go server.runSales()
 
 	fmt.Printf("%v", server.Serve())
 }
