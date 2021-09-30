@@ -35,7 +35,7 @@ func (s *Server) runElection() time.Duration {
 		return time.Minute * 5
 	}
 
-	ctx, cancel := utils.ManualContext("saleloop", "saleloop", time.Minute, true)
+	ctx, cancel := utils.ManualContext("saleloop", time.Minute)
 	config, err := s.load(ctx)
 	cancel()
 	if err != nil {
@@ -53,7 +53,7 @@ func (s *Server) runElection() time.Duration {
 			err = s.updateSales(config.Sales[i])
 			config.Sales[i].NextProcessTime = time.Now().Add(time.Hour).Unix()
 
-			ctx, cancel := utils.ManualContext("cs", "cs", time.Minute, true)
+			ctx, cancel := utils.ManualContext("cs", time.Minute)
 			s.save(ctx, config)
 			cancel()
 
@@ -196,7 +196,7 @@ func (s *Server) updateSales(sale *pb.Sale) error {
 	s.Log(fmt.Sprintf("Running update for %v", sale))
 	time.Sleep(time.Second * 2)
 	if !sale.OnHold {
-		ctx, cancel := utils.ManualContext("updatesales", "updatesales", time.Minute, false)
+		ctx, cancel := utils.ManualContext("updatesales", time.Minute)
 		defer cancel()
 		if time.Now().Sub(time.Unix(sale.LastUpdateTime, 0)) > time.Hour*24*7 && sale.Price > 499 { //one week
 			sale.LastUpdateTime = time.Now().Unix()

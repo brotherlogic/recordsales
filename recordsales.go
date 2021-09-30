@@ -270,7 +270,7 @@ func main() {
 		return
 	}
 
-	ctx, cancel := utils.ManualContext("recordsales", "recordsales", time.Minute, true)
+	ctx, cancel := utils.ManualContext("recordsales", time.Minute)
 	config, err := server.load(ctx)
 	cancel()
 	code := status.Convert(err).Code()
