@@ -69,10 +69,21 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 			Price: price,
 		}}}
 	} else {
-		val.History = append(val.History, &pb.PriceHistory{
-			Date:  time.Now().Unix(),
-			Price: price,
-		})
+		latest := int64(0)
+		value := float32(0)
+		for _, h := range val.History {
+			if h.Date > latest {
+				latest = h.Date
+				value = h.Price
+			}
+		}
+
+		if price != value {
+			val.History = append(val.History, &pb.PriceHistory{
+				Date:  time.Now().Unix(),
+				Price: price,
+			})
+		}
 	}
 
 	s.Log(fmt.Sprintf("%v", config.PriceHistory[req.GetId()]))
