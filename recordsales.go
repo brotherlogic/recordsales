@@ -29,6 +29,7 @@ type getter interface {
 	updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category)
 	expireSale(ctx context.Context, instanceID int32) error
 	loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error)
+	getPrice(ctx context.Context, id int32) (float32, error)
 }
 
 type prodGetter struct {
@@ -77,6 +78,21 @@ func (p *prodGetter) updateCategory(ctx context.Context, instanceID int32, categ
 	client := pbrc.NewRecordCollectionServiceClient(conn)
 	update := &pbrc.UpdateRecordRequest{Reason: "RecordSales-updateCategory", Update: &pbrc.Record{Release: &pbgd.Release{InstanceId: instanceID}, Metadata: &pbrc.ReleaseMetadata{Category: category}}}
 	client.UpdateRecord(ctx, update)
+}
+
+func (p *prodGetter) getPrice(ctx context.Context, id int32) (float32, error) {
+	conn, err := p.dial(ctx, "recordcollection")
+	if err != nil {
+		return -1, err
+	}
+	defer conn.Close()
+
+	client := pbrc.NewRecordCollectionServiceClient(conn)
+	res, err := client.GetPrice(ctx, &pbrc.GetPriceRequest{Id: id})
+	if err != nil {
+		return -1, err
+	}
+	return res.GetPrice(), err
 }
 
 func (p *prodGetter) loadRecord(ctx context.Context, instanceID int32) (*pbrc.Record, error) {
@@ -164,6 +180,11 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 	config = data.(*pb.Config)
 
 	config.Archives = s.trimList(ctx, s.config.Archives)
+
+	if config.PriceHistory == nil {
+		config.PriceHistory = make(map[int32]*pb.Prices)
+	}
+
 	return config, nil
 }
 
