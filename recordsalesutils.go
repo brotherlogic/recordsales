@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	gdpb "github.com/brotherlogic/godiscogs"
 	"github.com/brotherlogic/goserver/utils"
@@ -125,6 +127,9 @@ func (s *Server) trimList(ctx context.Context, in []*pb.Sale) []*pb.Sale {
 func (s *Server) syncSales(ctx context.Context, iid int32) error {
 	rec, err := s.getter.loadRecord(ctx, iid)
 	if err != nil {
+		if status.Convert(err).Code() == codes.OutOfRange {
+			return nil
+		}
 		return err
 	}
 
