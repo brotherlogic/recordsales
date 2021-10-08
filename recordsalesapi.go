@@ -63,7 +63,7 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 		return nil, err
 	}
 
-	if val, ok := config.PriceHistory[req.GetId()]; ok {
+	if val, ok := config.PriceHistory[req.GetId()]; !ok {
 		config.PriceHistory[req.GetId()] = &pb.Prices{History: []*pb.PriceHistory{&pb.PriceHistory{
 			Date:  time.Now().Unix(),
 			Price: price,

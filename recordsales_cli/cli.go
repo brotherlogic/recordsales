@@ -81,6 +81,11 @@ func main() {
 		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
+	case "update":
+		val, _ := strconv.Atoi(os.Args[2])
+		resp, err := client.UpdatePrice(ctx, &pb.UpdatePriceRequest{Id: int32(val)})
+
+		fmt.Printf("%v and %v\n", resp, err)
 	default:
 		fmt.Sprintf("Unknown command\n")
 	}
