@@ -77,5 +77,5 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 
 	s.Log(fmt.Sprintf("%v", config.PriceHistory[req.GetId()]))
 
-	return nil, s.save(ctx, config)
+	return &pb.UpdatePriceResponse{}, s.save(ctx, config)
 }
