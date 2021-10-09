@@ -9,6 +9,8 @@ import (
 	pb "github.com/brotherlogic/recordsales/proto"
 	google_protobuf "github.com/golang/protobuf/ptypes/any"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -52,7 +54,35 @@ func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb
 
 //ClientUpdate forces a move
 func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest) (*pbrc.ClientUpdateResponse, error) {
-	return &pbrc.ClientUpdateResponse{}, s.syncSales(ctx, in.GetInstanceId())
+	rec, err := s.getter.loadRecord(ctx, in.GetInstanceId())
+	if err != nil {
+		if status.Convert(err).Code() == codes.OutOfRange {
+			return &pbrc.ClientUpdateResponse{}, nil
+		}
+		return nil, err
+	}
+
+	err = s.syncSales(ctx, rec)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := s.FDialServer(ctx, "queue")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	qclient := qpb.NewQueueServiceClient(conn)
+	data, _ := proto.Marshal(&pb.UpdatePriceRequest{Id: rec.GetRelease().GetId()})
+	_, err = qclient.AddQueueItem(ctx, &qpb.AddQueueItemRequest{
+		QueueName:     "sale_update",
+		RunTime:       time.Now().Add(time.Hour * 24 * 7).Unix(),
+		Payload:       &google_protobuf.Any{Value: data},
+		Key:           fmt.Sprintf("%v", rec.GetRelease().GetId()),
+		RequireUnique: true,
+	})
+
+	return &pbrc.ClientUpdateResponse{}, err
 }
 
 func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*pb.UpdatePriceResponse, error) {

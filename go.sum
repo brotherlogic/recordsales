@@ -175,6 +175,8 @@ github.com/brotherlogic/queue v0.0.0-20210918172324-3a29dd363cb9/go.mod h1:YuTmS
 github.com/brotherlogic/queue v0.0.0-20210929141048-3140058645f3/go.mod h1:aapAJKQrKIHeUzsoOrmkIyCwzg6MafDEJ1BmhJbJEpw=
 github.com/brotherlogic/queue v0.0.0-20211009003020-7a16793a392e h1:+7L8lC8o88bWjGC5pOo36n3hpJfBNCAfh9qVg3BdNOk=
 github.com/brotherlogic/queue v0.0.0-20211009003020-7a16793a392e/go.mod h1:5VaAhNzAyFkxVLZvghIEdK60C+3q04F6odploNXAHkA=
+github.com/brotherlogic/queue v0.0.0-20211009010834-0f7ac6fa129d h1:S8vHzZs1AhlsDudvGgPlpjtRsWFuoHTdSuSxbQbW2cE=
+github.com/brotherlogic/queue v0.0.0-20211009010834-0f7ac6fa129d/go.mod h1:5VaAhNzAyFkxVLZvghIEdK60C+3q04F6odploNXAHkA=
 github.com/brotherlogic/recordadder v0.0.0-20210509025507-57b9b371a148/go.mod h1:ZxWbIXqyVWljIpwTGrT6gCWfVZVGSUApddyondErHNw=
 github.com/brotherlogic/recordadder v0.0.0-20210606020417-4cd7eb57e934/go.mod h1:lKelmJXwnO4Nt0YmHcS0oH97OG5saQCed29VEvMp+7Q=
 github.com/brotherlogic/recordadder v0.0.0-20210614154607-20576077f10c/go.mod h1:lFJtGf/VAYjTYR5eFciR7Jm+cmFzZuFnFFgFLphUwn8=
