@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	qpb "github.com/brotherlogic/queue/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
+	google_protobuf "github.com/golang/protobuf/ptypes/any"
 	"golang.org/x/net/context"
+	"google.golang.org/protobuf/proto"
 )
 
 // GetStale gets the stale records
@@ -88,5 +91,24 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 
 	s.Log(fmt.Sprintf("%v", config.PriceHistory[req.GetId()]))
 
-	return &pb.UpdatePriceResponse{}, s.save(ctx, config)
+	err = s.save(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := s.FDialServer(ctx, "queue")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	qclient := qpb.NewQueueServiceClient(conn)
+	data, _ := proto.Marshal(req)
+	_, err = qclient.AddQueueItem(ctx, &qpb.AddQueueItemRequest{
+		QueueName: "sale_update",
+		RunTime:   time.Now().Add(time.Hour * 24 * 7).Unix(),
+		Payload:   &google_protobuf.Any{Value: data},
+		Key:       fmt.Sprintf("%v", req.GetId()),
+	})
+
+	return &pb.UpdatePriceResponse{}, err
 }
