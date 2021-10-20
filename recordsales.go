@@ -165,7 +165,22 @@ func Init() *Server {
 	return s
 }
 
+var (
+	maxLen = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "recordsales_max",
+		Help: "The max number of sales",
+	})
+)
+
 func (s *Server) save(ctx context.Context, config *pb.Config) error {
+	maxV := 0
+	for _, mv := range config.GetPriceHistory() {
+		if len(mv.GetHistory()) > maxV {
+			maxV = len(mv.GetHistory())
+		}
+	}
+	maxLen.Set(float64(maxV))
+
 	return s.KSclient.Save(ctx, KEY, config)
 }
 

@@ -86,6 +86,36 @@ func main() {
 		resp, err := client.UpdatePrice(ctx, &pb.UpdatePriceRequest{Id: int32(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
+	case "fullping":
+		ctx2, cancel2 := utils.ManualContext("recordcollectioncli", time.Hour)
+		defer cancel2()
+
+		conn, err := utils.LFDialServer(ctx2, "recordsales")
+		if err != nil {
+			log.Fatalf("Argh: %v", err)
+		}
+		client := pbrc.NewClientUpdateServiceClient(conn)
+
+		conn2, err := utils.LFDialServer(ctx2, "recordcollection")
+		if err != nil {
+			log.Fatalf("Cannot reach rc: %v", err)
+		}
+		defer conn2.Close()
+
+		registry := pbrc.NewRecordCollectionServiceClient(conn2)
+		ids, err := registry.QueryRecords(ctx2, &pbrc.QueryRecordsRequest{Query: &pbrc.QueryRecordsRequest_All{true}})
+		if err != nil {
+			log.Fatalf("Bad query: %v", err)
+		}
+
+		for i, id := range ids.GetInstanceIds() {
+			log.Printf("PING %v -> %v", i, id)
+			_, err = client.ClientUpdate(ctx2, &pbrc.ClientUpdateRequest{InstanceId: int32(id)})
+			if err != nil {
+				log.Fatalf("Error on GET: %v", err)
+			}
+
+		}
 	default:
 		fmt.Sprintf("Unknown command\n")
 	}
