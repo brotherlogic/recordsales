@@ -75,6 +75,18 @@ func main() {
 		for _, r := range res.GetSales() {
 			fmt.Printf("%v - %v\n", time.Unix(r.GetLastUpdateTime(), 0), r.GetPrice())
 		}
+	case "sales":
+		val, _ := strconv.Atoi(os.Args[2])
+		res, err := client.GetPrice(ctx, &pb.GetPriceRequest{Id: int32(val)})
+		if err != nil {
+			log.Fatalf("Cannot get: %v", err)
+		}
+		if len(res.GetPrices().GetHistory()) == 0 {
+			fmt.Printf("No sales found!\n")
+		}
+		for _, r := range res.GetPrices().GetHistory() {
+			fmt.Printf("%v - %v\n", time.Unix(r.GetDate(), 0), r.GetPrice())
+		}
 	case "force":
 		val, _ := strconv.Atoi(os.Args[2])
 		client := pbrc.NewClientUpdateServiceClient(conn)
