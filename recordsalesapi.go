@@ -84,7 +84,19 @@ func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest)
 
 	return &pbrc.ClientUpdateResponse{}, err
 }
+func (s *Server) GetPrice(ctx context.Context, req *pb.GetPriceRequest) (*pb.GetPriceResponse, error) {
+	config, err := s.load(ctx)
+	if err != nil {
+		return nil, err
+	}
 
+	if val, ok := config.PriceHistory[req.GetId()]; ok {
+		return &pb.GetPriceResponse{Prices: val}, nil
+	}
+
+	return nil, fmt.Errorf("Cannot find: %v", req)
+
+}
 func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*pb.UpdatePriceResponse, error) {
 	config, err := s.load(ctx)
 	if err != nil {

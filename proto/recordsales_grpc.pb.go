@@ -11,7 +11,6 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // SaleServiceClient is the client API for SaleService service.
@@ -21,6 +20,7 @@ type SaleServiceClient interface {
 	GetStale(ctx context.Context, in *GetStaleRequest, opts ...grpc.CallOption) (*GetStaleResponse, error)
 	GetSaleState(ctx context.Context, in *GetStateRequest, opts ...grpc.CallOption) (*GetStateResponse, error)
 	UpdatePrice(ctx context.Context, in *UpdatePriceRequest, opts ...grpc.CallOption) (*UpdatePriceResponse, error)
+	GetPrice(ctx context.Context, in *GetPriceRequest, opts ...grpc.CallOption) (*GetPriceResponse, error)
 }
 
 type saleServiceClient struct {
@@ -58,6 +58,15 @@ func (c *saleServiceClient) UpdatePrice(ctx context.Context, in *UpdatePriceRequ
 	return out, nil
 }
 
+func (c *saleServiceClient) GetPrice(ctx context.Context, in *GetPriceRequest, opts ...grpc.CallOption) (*GetPriceResponse, error) {
+	out := new(GetPriceResponse)
+	err := c.cc.Invoke(ctx, "/recordsales.SaleService/GetPrice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SaleServiceServer is the server API for SaleService service.
 // All implementations should embed UnimplementedSaleServiceServer
 // for forward compatibility
@@ -65,6 +74,7 @@ type SaleServiceServer interface {
 	GetStale(context.Context, *GetStaleRequest) (*GetStaleResponse, error)
 	GetSaleState(context.Context, *GetStateRequest) (*GetStateResponse, error)
 	UpdatePrice(context.Context, *UpdatePriceRequest) (*UpdatePriceResponse, error)
+	GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error)
 }
 
 // UnimplementedSaleServiceServer should be embedded to have forward compatible implementations.
@@ -80,6 +90,9 @@ func (UnimplementedSaleServiceServer) GetSaleState(context.Context, *GetStateReq
 func (UnimplementedSaleServiceServer) UpdatePrice(context.Context, *UpdatePriceRequest) (*UpdatePriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePrice not implemented")
 }
+func (UnimplementedSaleServiceServer) GetPrice(context.Context, *GetPriceRequest) (*GetPriceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPrice not implemented")
+}
 
 // UnsafeSaleServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to SaleServiceServer will
@@ -89,7 +102,7 @@ type UnsafeSaleServiceServer interface {
 }
 
 func RegisterSaleServiceServer(s grpc.ServiceRegistrar, srv SaleServiceServer) {
-	s.RegisterService(&SaleService_ServiceDesc, srv)
+	s.RegisterService(&_SaleService_serviceDesc, srv)
 }
 
 func _SaleService_GetStale_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -146,10 +159,25 @@ func _SaleService_UpdatePrice_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-// SaleService_ServiceDesc is the grpc.ServiceDesc for SaleService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var SaleService_ServiceDesc = grpc.ServiceDesc{
+func _SaleService_GetPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPriceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaleServiceServer).GetPrice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/recordsales.SaleService/GetPrice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaleServiceServer).GetPrice(ctx, req.(*GetPriceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _SaleService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "recordsales.SaleService",
 	HandlerType: (*SaleServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -164,6 +192,10 @@ var SaleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdatePrice",
 			Handler:    _SaleService_UpdatePrice_Handler,
+		},
+		{
+			MethodName: "GetPrice",
+			Handler:    _SaleService_GetPrice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

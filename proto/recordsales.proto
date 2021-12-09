@@ -48,8 +48,17 @@ message UpdatePriceRequest {
 
 message UpdatePriceResponse {}
 
+message GetPriceRequest {
+  int32 id = 1;
+}
+
+message GetPriceResponse {
+  Prices prices = 1;
+}
+
 service SaleService {
   rpc GetStale(GetStaleRequest) returns (GetStaleResponse) {};
   rpc GetSaleState(GetStateRequest) returns (GetStateResponse) {};
   rpc UpdatePrice(UpdatePriceRequest) returns (UpdatePriceResponse) {};
+  rpc GetPrice(GetPriceRequest) returns (GetPriceResponse) {};
 }
