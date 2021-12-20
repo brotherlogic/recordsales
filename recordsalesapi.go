@@ -108,6 +108,8 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 		return nil, err
 	}
 
+	s.Log(fmt.Sprintf("Got price for %v -> %v", req.GetId(), price))
+
 	if val, ok := config.PriceHistory[req.GetId()]; !ok {
 		config.PriceHistory[req.GetId()] = &pb.Prices{History: []*pb.PriceHistory{{
 			Date:  time.Now().Unix(),
@@ -131,7 +133,7 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 		}
 	}
 
-	s.Log(fmt.Sprintf("%v", config.PriceHistory[req.GetId()]))
+	s.CtxLog(ctx, fmt.Sprintf("%v", config.PriceHistory[req.GetId()]))
 
 	err = s.save(ctx, config)
 	if err != nil {
