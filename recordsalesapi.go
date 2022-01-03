@@ -102,9 +102,21 @@ func (s *Server) GetPrice(ctx context.Context, req *pb.GetPriceRequest) (*pb.Get
 		return &pb.GetPriceResponse{Prices: val}, nil
 	}
 
-	return nil, fmt.Errorf("cannot find: %v", req)
-
+	// Call out to rc to get the current price
+	price, err := s.getter.getPrice(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	ph := &pb.PriceHistory{
+		Date:  time.Now().Unix(),
+		Price: price,
+	}
+	return &pb.GetPriceResponse{Prices: &pb.Prices{
+		Latest:  ph,
+		History: []*pb.PriceHistory{ph},
+	}}, nil
 }
+
 func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*pb.UpdatePriceResponse, error) {
 	config, err := s.load(ctx)
 	if err != nil {
