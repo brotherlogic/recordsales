@@ -91,10 +91,18 @@ func (s *Server) GetPrice(ctx context.Context, req *pb.GetPriceRequest) (*pb.Get
 	}
 
 	if val, ok := config.PriceHistory[req.GetId()]; ok {
+		var latest *pb.PriceHistory
+		for _, price := range val.GetHistory() {
+			if latest == nil || price.GetDate() < latest.GetDate() {
+				latest = price
+			}
+		}
+		val.Latest = latest
+
 		return &pb.GetPriceResponse{Prices: val}, nil
 	}
 
-	return nil, fmt.Errorf("Cannot find: %v", req)
+	return nil, fmt.Errorf("cannot find: %v", req)
 
 }
 func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*pb.UpdatePriceResponse, error) {
