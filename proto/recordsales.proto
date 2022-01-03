@@ -14,6 +14,7 @@ message Sale {
 
 message Prices {
   repeated PriceHistory history = 1;
+  PriceHistory latest = 2;
 }
 
 message PriceHistory {
