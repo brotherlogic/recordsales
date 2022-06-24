@@ -89,32 +89,37 @@ func (s *Server) GetPrice(ctx context.Context, req *pb.GetPriceRequest) (*pb.Get
 	if err != nil {
 		return nil, err
 	}
+	prices := make(map[int32]*pb.Prices)
 
-	if val, ok := config.PriceHistory[req.GetId()]; ok {
-		var latest *pb.PriceHistory
-		for _, price := range val.GetHistory() {
-			if latest == nil || price.GetDate() < latest.GetDate() {
-				latest = price
+	for _, id := range req.GetIds() {
+		if val, ok := config.PriceHistory[id]; ok {
+			var latest *pb.PriceHistory
+			for _, price := range val.GetHistory() {
+				if latest == nil || price.GetDate() < latest.GetDate() {
+					latest = price
+				}
+			}
+			val.Latest = latest
+
+			prices[id] = val
+		} else {
+			// Call out to rc to get the current price
+			price, err := s.getter.getPrice(ctx, id)
+			if err != nil {
+				return nil, err
+			}
+			ph := &pb.PriceHistory{
+				Date:  time.Now().Unix(),
+				Price: price,
+			}
+			prices[id] = &pb.Prices{
+				Latest:  ph,
+				History: []*pb.PriceHistory{ph},
 			}
 		}
-		val.Latest = latest
-
-		return &pb.GetPriceResponse{Prices: val}, nil
 	}
 
-	// Call out to rc to get the current price
-	price, err := s.getter.getPrice(ctx, req.GetId())
-	if err != nil {
-		return nil, err
-	}
-	ph := &pb.PriceHistory{
-		Date:  time.Now().Unix(),
-		Price: price,
-	}
-	return &pb.GetPriceResponse{Prices: &pb.Prices{
-		Latest:  ph,
-		History: []*pb.PriceHistory{ph},
-	}}, nil
+	return &pb.GetPriceResponse{Prices: prices}, nil
 }
 
 func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*pb.UpdatePriceResponse, error) {
