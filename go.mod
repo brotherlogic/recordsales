@@ -3,16 +3,16 @@ module github.com/brotherlogic/recordsales
 go 1.16
 
 require (
-	github.com/brotherlogic/discovery v0.0.0-20211122201709-d7c7cb44eb84
-	github.com/brotherlogic/godiscogs v0.0.0-20210915003628-cc86b65540a1
-	github.com/brotherlogic/goserver v0.0.0-20211220171135-4f19e11c9a73
-	github.com/brotherlogic/keystore v0.0.0-20201029130503-da423c07fd79
-	github.com/brotherlogic/lock v0.0.0-20211222223701-e417a8e06601 // indirect
-	github.com/brotherlogic/queue v0.0.0-20211222220117-7451b2f4f926
-	github.com/brotherlogic/recordcollection v0.0.0-20211221225035-3f7fc46e2315
+	github.com/brotherlogic/buildserver v0.0.0-20220612172013-def00cb1be17 // indirect
+	github.com/brotherlogic/discovery v0.0.0-20220519232029-8e51a90afab1
+	github.com/brotherlogic/godiscogs v0.0.0-20220523152004-1a5f78dd88d3
+	github.com/brotherlogic/goserver v0.0.0-20220604174220-0e8be9f0368e
+	github.com/brotherlogic/keystore v0.0.0-20220513234718-46a4655a49c0
+	github.com/brotherlogic/queue v0.0.0-20220519222727-4cb125a401fe
+	github.com/brotherlogic/recordcollection v0.0.0-20220523152032-8bbc7e07eba1
 	github.com/golang/protobuf v1.5.2
-	github.com/prometheus/client_golang v1.11.0
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
-	google.golang.org/grpc v1.43.0
-	google.golang.org/protobuf v1.27.1
+	github.com/prometheus/client_golang v1.12.2
+	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
+	google.golang.org/grpc v1.47.0
+	google.golang.org/protobuf v1.28.0
 )
