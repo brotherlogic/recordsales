@@ -77,14 +77,14 @@ func main() {
 		}
 	case "sales":
 		val, _ := strconv.Atoi(os.Args[2])
-		res, err := client.GetPrice(ctx, &pb.GetPriceRequest{Id: int32(val)})
+		res, err := client.GetPrice(ctx, &pb.GetPriceRequest{Ids: []int32{int32(val)}})
 		if err != nil {
 			log.Fatalf("Cannot get: %v", err)
 		}
-		if len(res.GetPrices().GetHistory()) == 0 {
+		if len(res.GetPrices()[int32(val)].GetHistory()) == 0 {
 			fmt.Printf("No sales found!\n")
 		}
-		for _, r := range res.GetPrices().GetHistory() {
+		for _, r := range res.GetPrices()[int32(val)].GetHistory() {
 			fmt.Printf("%v - %v\n", time.Unix(r.GetDate(), 0), r.GetPrice())
 		}
 	case "force":
