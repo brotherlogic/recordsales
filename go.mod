@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/brotherlogic/discovery v0.0.0-20220807001338-21d1d2714c5c
+	github.com/brotherlogic/dstore v0.0.0-20220807172034-b58759d68e0e // indirect
 	github.com/brotherlogic/godiscogs v0.0.0-20220722012105-93cf4f2124d9
 	github.com/brotherlogic/goserver v0.0.0-20220802151516-4b60a60b3020
 	github.com/brotherlogic/keystore v0.0.0-20220621052415-70ae78501e3c
