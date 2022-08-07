@@ -298,15 +298,15 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 	server := Init()
-	server.PrepServer()
+	server.PrepServer("recordsales")
 	server.Register = server
 
-	err := server.RegisterServerV2("recordsales", false, true)
+	err := server.RegisterServerV2(false)
 	if err != nil {
 		return
 	}
 
-	ctx, cancel := utils.ManualContext("recordsales", time.Minute)
+	ctx, cancel := utils.ManualContext("recordsales-firstload", time.Minute)
 	config, err := server.load(ctx)
 	cancel()
 	code := status.Convert(err).Code()
