@@ -53,6 +53,10 @@ func (t *testGetter) expireSale(ctx context.Context, price int32) error {
 	return nil
 }
 
+func (t *testGetter) getPrice(ctx context.Context, id int32) (float32, error) {
+	return 10, nil
+}
+
 func (t *testGetter) updateCategory(ctx context.Context, instanceID int32, category pbrc.ReleaseMetadata_Category) {
 }
 
@@ -75,7 +79,7 @@ func TestSyncSales(t *testing.T) {
 	s.testing = true
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, Category: pbrc.ReleaseMetadata_LISTED_TO_SELL}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 
-	s.syncSales(context.Background(), 177077893)
+	s.syncSales(context.Background(), &pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{}})
 
 	found := false
 	for _, sale := range s.config.Sales {
@@ -97,7 +101,7 @@ func TestSyncSalesWithCacheHit(t *testing.T) {
 		Release: &pbgd.Release{InstanceId: 12}}}}
 	s.save(context.Background(), config)
 
-	s.syncSales(context.Background(), 12)
+	s.syncSales(context.Background(), &pbrc.Record{Release: &pbgd.Release{InstanceId: 12}, Metadata: &pbrc.ReleaseMetadata{}})
 
 	found := false
 	for _, sale := range s.config.Sales {
@@ -120,7 +124,7 @@ func TestSyncSalesWithArchive(t *testing.T) {
 	s.getter = &testGetter{records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12, SalePrice: 200}, Release: &pbgd.Release{InstanceId: 177077893}}}}
 	s.save(context.Background(), config)
 
-	s.syncSales(context.Background(), 177077893)
+	s.syncSales(context.Background(), &pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{}})
 
 	if len(s.config.Archives) == 1 {
 		t.Errorf("Too much archive: %v", s.config.Archives)
@@ -130,7 +134,7 @@ func TestSyncSalesWithArchive(t *testing.T) {
 func TestSyncSalesWithGetFail(t *testing.T) {
 	s := getTestServer()
 	s.getter = &testGetter{fail: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12}}}}
-	s.syncSales(context.Background(), 177077893)
+	s.syncSales(context.Background(), &pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{}})
 
 	if len(s.config.Sales) > 0 {
 		t.Errorf("Sales have synced somehow: %v", s.config)
@@ -141,7 +145,7 @@ func TestSyncSalesWithExpireFail(t *testing.T) {
 	s := getTestServer()
 	s.testing = false
 	s.getter = &testGetter{failExpire: true, records: []*pbrc.Record{&pbrc.Record{Metadata: &pbrc.ReleaseMetadata{SaleId: 12}, Release: &pbgd.Release{InstanceId: 12, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7"}}}}}}}
-	s.syncSales(context.Background(), 177077893)
+	s.syncSales(context.Background(), &pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{}})
 
 	if len(s.config.Sales) > 0 {
 		t.Errorf("Sales have synced somehow: %v", s.config)
@@ -230,7 +234,7 @@ func TestRemoveRecordOnceSold(t *testing.T) {
 	config := &pb.Config{}
 	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893})
 	s.save(context.Background(), config)
-	s.syncSales(context.Background(), 177077893)
+	s.syncSales(context.Background(), &pbrc.Record{Release: &pbgd.Release{InstanceId: 177077893}, Metadata: &pbrc.ReleaseMetadata{}})
 
 	if len(s.config.Sales) != 0 && len(s.config.Archives) != 1 {
 		t.Errorf("Record sold has not been removed and added to archive")
@@ -241,44 +245,6 @@ func TestNotInPlay(t *testing.T) {
 	s := getTestServer()
 	if s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}}) {
 		t.Errorf("All records are not in play")
-	}
-}
-
-func TestInPlay(t *testing.T) {
-	s := getTestServer()
-	s.testing = true
-	if !s.isInPlay(context.Background(), &pbrc.Record{Release: &pbgd.Release{Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"12\""}}}}, Metadata: &pbrc.ReleaseMetadata{}}) {
-		t.Errorf("All records are not in play")
-	}
-}
-
-func TestSaleTrim(t *testing.T) {
-	s := getTestServer()
-	s.testing = true
-	recs, err := s.trimRecords(context.Background(), []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{}},
-	})
-
-	if err != nil {
-		t.Fatalf("Error in trim: %v", err)
-	}
-
-	if len(recs) != 2 {
-		t.Errorf("Records were not trimmed: %v", len(recs))
-	}
-}
-func TestSaleTrimRestoreFail(t *testing.T) {
-	s := getTestServer()
-	s.getter = &testGetter{fail: true}
-	s.testing = true
-	tr, err := s.trimRecords(context.Background(), []*pbrc.Record{
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 356769827, Formats: []*pbgd.Format{&pbgd.Format{Descriptions: []string{"7\""}}}}, Metadata: &pbrc.ReleaseMetadata{}},
-		&pbrc.Record{Release: &pbgd.Release{InstanceId: 2}, Metadata: &pbrc.ReleaseMetadata{SaleState: pbgd.SaleState_EXPIRED}},
-	})
-
-	if err == nil {
-		t.Fatalf("Error in trim: %v", tr)
 	}
 }
 
