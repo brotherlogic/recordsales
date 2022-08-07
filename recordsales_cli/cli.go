@@ -64,7 +64,7 @@ func main() {
 			fmt.Printf("%v. %v\n", i, rec.GetRelease().Title)
 		}
 	case "get":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		res, err := client.GetSaleState(ctx, &pb.GetStateRequest{InstanceId: int32(val)})
 		if err != nil {
 			log.Fatalf("Cannot get: %v", err)
@@ -76,7 +76,7 @@ func main() {
 			fmt.Printf("%v - %v\n", time.Unix(r.GetLastUpdateTime(), 0), r.GetPrice())
 		}
 	case "sales":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		res, err := client.GetPrice(ctx, &pb.GetPriceRequest{Ids: []int32{int32(val)}})
 		if err != nil {
 			log.Fatalf("Cannot get: %v", err)
@@ -88,13 +88,13 @@ func main() {
 			fmt.Printf("%v - %v\n", time.Unix(r.GetDate(), 0), r.GetPrice())
 		}
 	case "force":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		client := pbrc.NewClientUpdateServiceClient(conn)
 		resp, err := client.ClientUpdate(ctx, &pbrc.ClientUpdateRequest{InstanceId: int32(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
 	case "update":
-		val, _ := strconv.Atoi(os.Args[2])
+		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		resp, err := client.UpdatePrice(ctx, &pb.UpdatePriceRequest{Id: int32(val)})
 
 		fmt.Printf("%v and %v\n", resp, err)
