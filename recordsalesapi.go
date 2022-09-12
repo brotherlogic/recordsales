@@ -133,7 +133,7 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 		return nil, err
 	}
 
-	s.Log(fmt.Sprintf("Got price for %v -> %v", req.GetId(), price))
+	s.CtxLog(ctx, fmt.Sprintf("Got price for %v -> %v", req.GetId(), price))
 
 	if val, ok := config.PriceHistory[req.GetId()]; !ok {
 		config.PriceHistory[req.GetId()] = &pb.Prices{History: []*pb.PriceHistory{{
