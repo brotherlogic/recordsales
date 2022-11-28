@@ -712,8 +712,9 @@ github.com/brotherlogic/githubcard v0.0.0-20221128053718-129699b770fc/go.mod h1:
 github.com/brotherlogic/githubcard v0.0.0-20221128054122-72ba46f64ff8/go.mod h1:boHE0nqur1cvBAvt/YqGvm9jFEndO5fBPSBpoAC8ydI=
 github.com/brotherlogic/githubcard v0.0.0-20221128054551-041ddab43711/go.mod h1:iT5hFJW47LBuGambecnqopfvFNXlcJEHZLl7/pPvENs=
 github.com/brotherlogic/githubcard v0.0.0-20221128055019-ea6f46c36534/go.mod h1:BqZv6m7TbJAS0zegNGa56PGh3WkWOrxS4Rfk7y6oQPE=
-github.com/brotherlogic/githubcard v0.0.0-20221128055149-66f05daea5a4 h1:qvyhV9pC418J3XX2/6IE5nBP4qYicjAh3VuqN04UI0U=
 github.com/brotherlogic/githubcard v0.0.0-20221128055149-66f05daea5a4/go.mod h1:ickLJh7LCBpJtezNAjXzBX4JMx3bz1r5UP2VE5/W2Gc=
+github.com/brotherlogic/githubcard v0.0.0-20221128055741-7b48b1f8ce34 h1:jrC4do+7TO1RWq4lIAtZN9v3A5txOPPUvwjv0WiDKu0=
+github.com/brotherlogic/githubcard v0.0.0-20221128055741-7b48b1f8ce34/go.mod h1:A3jzUvuGImO2eAqjD+FNDoejrSApj2ZJGRYJaLnBV3A=
 github.com/brotherlogic/gobuildslave v0.0.0-20201112143137-ce3a2e75a18e/go.mod h1:gnbI1PHvnu1JX1Omx7okU5jSejp3kC6k1ha6SjjAW+E=
 github.com/brotherlogic/gobuildslave v0.0.0-20210517144112-4098e8e4a598/go.mod h1:fiYCjFtjZNogzRObwEGJ0Uev0pD/2tctSlW3mAgW1yE=
 github.com/brotherlogic/gobuildslave v0.0.0-20210602144845-3668b9c969f1/go.mod h1:0JppatVrSKZb799PaHbX8j9nJIwEziC0Gu8OnNLgggk=
@@ -1021,6 +1022,7 @@ github.com/brotherlogic/printer v0.0.0-20221128053652-3233f3cee1c9/go.mod h1:apQ
 github.com/brotherlogic/printer v0.0.0-20221128053903-d66e2c746e3a/go.mod h1:RdMd9x9az1PqoIKiFI0WYFZuSjOiFKeuwlLGna/8164=
 github.com/brotherlogic/printer v0.0.0-20221128054717-5dcc02849cbd/go.mod h1:NVesm0Aun+dDK28v5zymtayzD13d083m/jfVqTci4Y4=
 github.com/brotherlogic/printer v0.0.0-20221128055051-da5b00ccb570/go.mod h1:n2FkOIzdkjJgmcAOuYL19gBLD2vqcE1/yUn8BySiwU8=
+github.com/brotherlogic/printer v0.0.0-20221128055709-0f50ebc37cd1/go.mod h1:hZCC1IMHUdMi4EZ7oSiwHMijMUlkqnT6+k3XZI860qI=
 github.com/brotherlogic/proxy v0.0.0-20201017172302-a8d9180667fa/go.mod h1:OeUyxUOUvW2EBiVLgjfRp9/7aWEofb6mnzCSFrd9xYE=
 github.com/brotherlogic/proxy v0.0.0-20211113222556-d6986396311e/go.mod h1:WdCgLYvTtDyXtqt/ludN/Gl7B0RsYr5hSlfd8EuaSXU=
 github.com/brotherlogic/proxy v0.0.0-20220306230204-551d2f4b1b0f/go.mod h1:Jd9DvlyQEtRtBRsCdP/vesrzDfJGZj/7e9iF8UF6QL4=
