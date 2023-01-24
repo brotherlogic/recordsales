@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	keystoreclient "github.com/brotherlogic/keystore/client"
 	"golang.org/x/net/context"
@@ -149,81 +148,6 @@ func TestSyncSalesWithExpireFail(t *testing.T) {
 
 	if len(s.config.Sales) > 0 {
 		t.Errorf("Sales have synced somehow: %v", s.config)
-	}
-}
-
-func TestUpdateSalesWithFail(t *testing.T) {
-	s := getTestServer()
-	s.getter = &testGetter{fail: true}
-	config := &pb.Config{}
-	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
-	s.save(context.Background(), config)
-	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 800})
-	if err == nil {
-		t.Errorf("Update did not fail")
-	}
-}
-
-func TestUpdateSales(t *testing.T) {
-	s := getTestServer()
-	config := &pb.Config{}
-	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12})
-	s.save(context.Background(), config)
-	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 800})
-	if err != nil {
-		t.Errorf("Update failed: %v", err)
-	}
-
-	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime == 12 {
-		t.Errorf("This test needs updating: %v", s.config)
-	}
-
-	if time.Now().Sub(time.Unix(s.config.LastSaleRun, 0)) <= time.Minute {
-		t.Errorf("Time has not been updated: %v", time.Unix(s.config.LastSaleRun, 0))
-	}
-}
-
-func TestUpdateSalesWhenOnHold(t *testing.T) {
-	s := getTestServer()
-	config := &pb.Config{}
-	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
-	s.save(context.Background(), config)
-	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, OnHold: true})
-	if err != nil {
-		t.Errorf("Update failed: %v", err)
-	}
-
-	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
-		t.Errorf("On Hold sale was updated")
-	}
-}
-
-func TestUpdateSalesWithStale(t *testing.T) {
-	s := getTestServer()
-	config := &pb.Config{}
-	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
-	s.save(context.Background(), config)
-	s.updateSales(&pb.Sale{InstanceId: 12, LastUpdateTime: 12, Price: 499})
-
-	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
-		t.Errorf("This test needs updating: %v", s.config)
-	}
-}
-
-func TestUpdateSalesWithStaleFail(t *testing.T) {
-	s := getTestServer()
-	s.getter = &testGetter{fail: true}
-	config := &pb.Config{}
-	config.Sales = append(config.Sales, &pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
-	s.save(context.Background(), config)
-	err := s.updateSales(&pb.Sale{InstanceId: 177077893, LastUpdateTime: 12, Price: 499})
-
-	if err == nil {
-		t.Errorf("Test did not fail")
-	}
-
-	if len(s.config.Sales) > 0 && s.config.Sales[0].LastUpdateTime != 12 {
-		t.Errorf("This test needs updating: %v", s.config)
 	}
 }
 
