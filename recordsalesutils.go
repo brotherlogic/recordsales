@@ -11,6 +11,10 @@ import (
 	pb "github.com/brotherlogic/recordsales/proto"
 )
 
+func (s *Server) metrics(config *pb.Config) {
+	sales.Set(float64(len(config.GetSales())))
+}
+
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
 	return false //s.testing
 }
