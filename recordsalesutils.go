@@ -13,6 +13,12 @@ import (
 
 func (s *Server) metrics(config *pb.Config) {
 	sales.Set(float64(len(config.GetSales())))
+
+	costv := float64(0)
+	for _, sale := range config.GetSales() {
+		costv += float64(sale.GetPrice())
+	}
+	cost.Set(costv)
 }
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
