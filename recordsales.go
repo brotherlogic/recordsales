@@ -181,6 +181,7 @@ func (s *Server) save(ctx context.Context, config *pb.Config) error {
 	}
 	maxLen.Set(float64(maxV))
 
+	s.metrics(config)
 	return s.KSclient.Save(ctx, KEY, config)
 }
 
@@ -200,6 +201,7 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 		config.PriceHistory = make(map[int32]*pb.Prices)
 	}
 
+	s.metrics(config)
 	return config, nil
 }
 
