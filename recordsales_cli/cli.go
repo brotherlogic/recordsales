@@ -63,6 +63,14 @@ func main() {
 			rec := getRecord(ctx, id.InstanceId)
 			fmt.Printf("%v. %v\n", i, rec.GetRelease().Title)
 		}
+	case "all":
+		res, err := client.GetSaleState(ctx, &pb.GetStateRequest{})
+		if err != nil {
+			log.Fatalf("Bad get: %v", err)
+		}
+		for i, sale := range res.GetSales() {
+			fmt.Printf("%v. %v (%v)\n", i, sale.GetInstanceId(), sale.GetPrice())
+		}
 	case "get":
 		val, _ := strconv.ParseInt(os.Args[2], 10, 32)
 		res, err := client.GetSaleState(ctx, &pb.GetStateRequest{InstanceId: int32(val)})

@@ -38,7 +38,7 @@ func (s *Server) GetSaleState(ctx context.Context, req *pb.GetStateRequest) (*pb
 	}
 	resp := []*pb.Sale{}
 	for _, sale := range config.Sales {
-		if sale.InstanceId == req.InstanceId {
+		if sale.InstanceId == req.InstanceId || req.GetInstanceId() == 0 {
 			resp = append(resp, sale)
 		}
 	}
