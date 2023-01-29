@@ -103,7 +103,6 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 				}
 				sale.LastUpdateTime = rec.GetMetadata().LastSalePriceUpdate
 				sale.OnHold = rec.GetMetadata().GetSaleState() == gdpb.SaleState_EXPIRED
-
 			}
 			break
 
@@ -126,6 +125,15 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 			i++
 		}
 	}
+
+	// Remove record if it is NOT_FOR_SALE
+	var nsales []*pb.Sale
+	for _, sale := range config.GetSales() {
+		if sale.GetInstanceId() != rec.GetRelease().GetInstanceId() || rec.GetMetadata().GetSaleState() != gdpb.SaleState_NOT_FOR_SALE {
+			nsales = append(nsales, sale)
+		}
+	}
+	config.Sales = nsales
 
 	return s.save(ctx, config)
 }
