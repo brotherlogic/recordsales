@@ -319,7 +319,7 @@ func main() {
 	if code != codes.OK {
 		log.Fatalf("Unable to read sales: %v", err)
 	}
-	server.setOldest(config.GetSales())
+	server.metrics(config)
 
 	// Stop updating sales
 	//go server.runSales()
