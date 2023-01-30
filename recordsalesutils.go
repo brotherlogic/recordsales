@@ -132,10 +132,10 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 		}
 	}
 
-	// Remove record if it is NOT_FOR_SALE
+	// Remove record if it is NOT_FOR_SALE or EXPIRED
 	var nsales []*pb.Sale
 	for _, sale := range config.GetSales() {
-		if sale.GetInstanceId() != rec.GetRelease().GetInstanceId() || rec.GetMetadata().GetSaleState() != gdpb.SaleState_NOT_FOR_SALE {
+		if sale.GetInstanceId() != rec.GetRelease().GetInstanceId() || (rec.GetMetadata().GetSaleState() != gdpb.SaleState_NOT_FOR_SALE && rec.GetMetadata().GetSaleState() != gdpb.SaleState_EXPIRED) {
 			nsales = append(nsales, sale)
 		}
 	}
