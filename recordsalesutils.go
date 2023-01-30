@@ -9,16 +9,16 @@ import (
 	gdpb "github.com/brotherlogic/godiscogs"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
 	pb "github.com/brotherlogic/recordsales/proto"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (s *Server) metrics(config *pb.Config) {
 	sales.Set(float64(len(config.GetSales())))
 
-	costv := float64(0)
 	for _, sale := range config.GetSales() {
-		costv += float64(sale.GetPrice())
+		cost.With(prometheus.Labels{"id": fmt.Sprintf("%v", sale.GetInstanceId())}).Set(float64(sale.GetPrice()))
 	}
-	cost.Set(costv)
+
 }
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
