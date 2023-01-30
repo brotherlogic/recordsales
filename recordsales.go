@@ -265,10 +265,10 @@ var (
 		Name: "recordsales_sales",
 		Help: "The number of sales",
 	})
-	cost = promauto.NewGauge(prometheus.GaugeOpts{
+	cost = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "recordsales_costs",
 		Help: "The amount of potential salve value",
-	})
+	}, []string{"id"})
 
 	nextUpdateTime = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "recordsales_update_time",
