@@ -276,20 +276,6 @@ var (
 	})
 )
 
-func (s *Server) setOldest(salesIn []*pb.Sale) {
-	lowest := time.Now().Unix()
-	ccost := int32(0)
-	for _, sale := range salesIn {
-		if sale.GetLastUpdateTime() < lowest && sale.GetLastUpdateTime() > 0 {
-			lowest = sale.GetLastUpdateTime()
-		}
-		ccost += sale.GetPrice()
-	}
-	cost.Set(float64(ccost))
-	nextUpdateTime.Set(float64(lowest))
-	sales.Set(float64(len(salesIn)))
-}
-
 func main() {
 	var quiet = flag.Bool("quiet", false, "Show all output")
 	flag.Parse()
