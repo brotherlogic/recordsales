@@ -136,7 +136,9 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 	var nsales []*pb.Sale
 	for _, sale := range config.GetSales() {
 		if sale.GetInstanceId() != rec.GetRelease().GetInstanceId() || (rec.GetMetadata().GetSaleState() != gdpb.SaleState_NOT_FOR_SALE && rec.GetMetadata().GetSaleState() != gdpb.SaleState_EXPIRED) {
-			nsales = append(nsales, sale)
+			if rec.GetMetadata().GetBoxState() == pbrc.ReleaseMetadata_BOX_UNKNOWN || rec.GetMetadata().GetBoxState() == pbrc.ReleaseMetadata_OUT_OF_BOX {
+				nsales = append(nsales, sale)
+			}
 		}
 	}
 	config.Sales = nsales
