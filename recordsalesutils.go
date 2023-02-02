@@ -102,6 +102,7 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 				if !seen {
 					config.Archives = append(config.Archives, oldSale)
 				}
+				s.CtxLog(ctx, fmt.Sprintf("NEWPRICE %v -> %v, %v", rec.GetRelease().GetInstanceId(), rec.GetMetadata().GetSalePrice(), rec.GetMetadata().GetCurrentSalePrice()))
 				sale.Price = rec.GetMetadata().SalePrice
 				if sale.Price == 0 {
 					sale.Price = rec.GetMetadata().GetCurrentSalePrice()
@@ -115,11 +116,13 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 	}
 
 	if !found && rec.GetMetadata().GetSaleId() > 0 && (rec.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_LISTED_TO_SELL) {
+		s.CtxLog(ctx, fmt.Sprintf("NEWSALE: %v", rec.GetRelease().GetInstanceId()))
 		config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 	}
 
 	//Remove record if it's sold
 	if found && rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL {
+		s.CtxLog(ctx, fmt.Sprintf("REMSALE: %v -> %v", rec.GetRelease().GetInstanceId(), rec.GetMetadata().GetCategory()))
 		i := 0
 		for i < len(config.Sales) {
 			if config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
@@ -135,6 +138,8 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 		if sale.GetInstanceId() != rec.GetRelease().GetInstanceId() || (rec.GetMetadata().GetSaleState() != gdpb.SaleState_NOT_FOR_SALE && rec.GetMetadata().GetSaleState() != gdpb.SaleState_EXPIRED) {
 			if rec.GetMetadata().GetBoxState() == pbrc.ReleaseMetadata_BOX_UNKNOWN || rec.GetMetadata().GetBoxState() == pbrc.ReleaseMetadata_OUT_OF_BOX {
 				nsales = append(nsales, sale)
+			} else {
+				s.CtxLog(ctx, fmt.Sprintf("REMOVING %v -> %v", rec.GetRelease().GetInstanceId(), rec.GetMetadata().GetBoxState()))
 			}
 		}
 	}
