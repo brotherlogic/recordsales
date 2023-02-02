@@ -76,7 +76,7 @@ func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest)
 	data, _ := proto.Marshal(&pb.UpdatePriceRequest{Id: rec.GetRelease().GetId()})
 	_, err = qclient.AddQueueItem(ctx, &qpb.AddQueueItemRequest{
 		QueueName:     "sale_update",
-		RunTime:       time.Now().Add(time.Hour * 24 * 7).Unix(),
+		RunTime:       time.Now().Add(time.Hour * 24).Unix(),
 		Payload:       &google_protobuf.Any{Value: data},
 		Key:           fmt.Sprintf("%v", rec.GetRelease().GetId()),
 		RequireUnique: true,
@@ -174,7 +174,7 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 	data, _ := proto.Marshal(req)
 	_, err = qclient.AddQueueItem(ctx, &qpb.AddQueueItemRequest{
 		QueueName: "sale_update",
-		RunTime:   time.Now().Add(time.Hour * 24 * 7).Unix(),
+		RunTime:   time.Now().Add(time.Hour * 24).Unix(),
 		Payload:   &google_protobuf.Any{Value: data},
 		Key:       fmt.Sprintf("%v", req.GetId()),
 	})
