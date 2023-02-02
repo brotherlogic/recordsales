@@ -29,7 +29,6 @@ func (s *Server) trimRecords(ctx context.Context, nrecs []*pbrc.Record) ([]*pbrc
 	recs := []*pbrc.Record{}
 
 	for _, rec := range nrecs {
-		s.CtxLog(ctx, fmt.Sprintf("%v is in play? %v", rec.GetRelease().GetInstanceId(), s.isInPlay(ctx, rec)))
 		if s.isInPlay(ctx, rec) {
 			//Ensure the record is for sale if it needs to be
 			if rec.GetMetadata().SaleState == gdpb.SaleState_EXPIRED {
@@ -117,7 +116,6 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 	}
 
 	if !found && rec.GetMetadata().GetSaleId() > 0 && (rec.GetMetadata().GetCategory() == pbrc.ReleaseMetadata_LISTED_TO_SELL) {
-		s.CtxLog(ctx, fmt.Sprintf("ADDING %v", rec.GetRelease().GetInstanceId()))
 		s.CtxLog(ctx, fmt.Sprintf("NEWSALE: %v", rec.GetRelease().GetInstanceId()))
 		config.Sales = append(config.Sales, &pb.Sale{InstanceId: rec.GetRelease().InstanceId, LastUpdateTime: time.Now().Unix()})
 	}
@@ -125,7 +123,6 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 	//Remove record if it's sold
 	if found && rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL {
 		s.CtxLog(ctx, fmt.Sprintf("REMSALE: %v -> %v", rec.GetRelease().GetInstanceId(), rec.GetMetadata().GetCategory()))
-		s.CtxLog(ctx, fmt.Sprintf("REMOVING %v -> %v, %v", rec.GetRelease().InstanceId, found, rec.GetMetadata().Category != pbrc.ReleaseMetadata_LISTED_TO_SELL && rec.GetMetadata().Category != pbrc.ReleaseMetadata_STALE_SALE))
 		i := 0
 		for i < len(config.Sales) {
 			if config.Sales[i].InstanceId == rec.GetRelease().InstanceId {
