@@ -182,6 +182,7 @@ func (s *Server) save(ctx context.Context, config *pb.Config) error {
 	maxLen.Set(float64(maxV))
 
 	s.metrics(config)
+	s.CtxLog(ctx, fmt.Sprintf("FILESAVE: %v", config.GetSales()))
 	return s.KSclient.Save(ctx, KEY, config)
 }
 
@@ -194,6 +195,7 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 	}
 
 	config = data.(*pb.Config)
+	s.CtxLog(ctx, fmt.Sprintf("FILELOAD: %v", config.GetSales()))
 
 	config.Archives = s.trimList(ctx, s.config.Archives)
 
