@@ -87,6 +87,11 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 	for _, sale := range config.Sales {
 		if sale.InstanceId == rec.GetRelease().InstanceId {
 			found = true
+
+			if rec.GetMetadata().GetSaleBudget() == "" {
+				return fmt.Errorf("This record has no sale budget")
+			}
+
 			if !rec.GetMetadata().SaleDirty {
 				oldSale := &pb.Sale{
 					InstanceId:     sale.InstanceId,
