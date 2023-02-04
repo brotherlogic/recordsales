@@ -89,7 +89,7 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 			found = true
 
 			if rec.GetMetadata().GetSaleBudget() == "" {
-				return fmt.Errorf("This record has no sale budget")
+				return fmt.Errorf("This record (%v) has no sale budget", sale.GetInstanceId())
 			}
 
 			if !rec.GetMetadata().SaleDirty {
