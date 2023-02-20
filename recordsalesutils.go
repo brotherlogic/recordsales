@@ -21,6 +21,7 @@ func (s *Server) metrics(config *pb.Config) {
 
 	sizes.With(prometheus.Labels{"category": "sales"}).Set(float64(len(config.GetSales())))
 	sizes.With(prometheus.Labels{"category": "archive"}).Set(float64(len(config.GetArchives())))
+	sizes.With(prometheus.Labels{"category": "history"}).Set(float64(len(config.GetPriceHistory())))
 }
 
 func (s *Server) isInPlay(ctx context.Context, r *pbrc.Record) bool {
