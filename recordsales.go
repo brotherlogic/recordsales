@@ -141,9 +141,11 @@ func (p *prodGetter) expireSale(ctx context.Context, instanceID int32) error {
 const (
 	// KEY - where we store sale info
 	KEY = "/github.com/brotherlogic/recordsales/config"
+
+	PRICES = "/github.com/brotherlogic/recordsales/prices/%v"
 )
 
-//Server main server type
+// Server main server type
 type Server struct {
 	*goserver.GoServer
 	config  *pb.Config
@@ -178,14 +180,6 @@ var (
 )
 
 func (s *Server) save(ctx context.Context, config *pb.Config) error {
-	maxV := 0
-	for _, mv := range config.GetPriceHistory() {
-		if len(mv.GetHistory()) > maxV {
-			maxV = len(mv.GetHistory())
-		}
-	}
-	maxLen.Set(float64(maxV))
-
 	s.metrics(config)
 	s.CtxLog(ctx, fmt.Sprintf("FILESAVE: %v", config.GetSales()))
 	return s.KSclient.Save(ctx, KEY, config)
@@ -204,12 +198,26 @@ func (s *Server) load(ctx context.Context) (*pb.Config, error) {
 
 	config.Archives = s.trimList(ctx, s.config.Archives)
 
-	if config.PriceHistory == nil {
-		config.PriceHistory = make(map[int32]*pb.Prices)
-	}
-
 	s.metrics(config)
 	return config, nil
+}
+
+func (s *Server) loadHistory(ctx context.Context, id int32) (*pb.Prices, error) {
+	prices := &pb.Prices{}
+	data, _, err := s.KSclient.Read(ctx, fmt.Sprintf(PRICES, id), prices)
+	if err != nil {
+		if status.Code(err) == codes.FailedPrecondition {
+			prices = &pb.Prices{History: make([]*pb.PriceHistory, 0)}
+		}
+	} else {
+		prices = data.(*pb.Prices)
+	}
+
+	return prices, nil
+}
+
+func (s *Server) saveHistory(ctx context.Context, id int32, prices *pb.Prices) error {
+	return s.KSclient.Save(ctx, fmt.Sprintf(PRICES, id), prices)
 }
 
 // DoRegister does RPC registration
