@@ -116,9 +116,9 @@ func (s *Server) UpdatePrice(ctx context.Context, req *pb.UpdatePriceRequest) (*
 		return nil, err
 	}
 
-	if hist, ok := config.GetPriceHistorys()[req.GetId()]; ok {
+	if hist, ok := config.GetPriceHistory()[req.GetId()]; ok {
 		history = hist
-		delete(config.GetPriceHistorys(), req.GetId())
+		delete(config.GetPriceHistory(), req.GetId())
 	}
 
 	price, err := s.getter.getPrice(ctx, req.GetId())
