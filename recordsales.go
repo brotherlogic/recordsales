@@ -170,6 +170,11 @@ var (
 		Name: "recordsales_max",
 		Help: "The max number of sales",
 	})
+
+	sizes = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "recordsales_lens",
+		Help: "The max number of sales",
+	}, []string{"category"})
 )
 
 func (s *Server) save(ctx context.Context, config *pb.Config) error {
