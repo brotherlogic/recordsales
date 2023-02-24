@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	gdpb "github.com/brotherlogic/godiscogs/proto"
 	pbrc "github.com/brotherlogic/recordcollection/proto"
@@ -92,7 +94,7 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 			found = true
 
 			if rec.GetMetadata().GetSaleBudget() == "" {
-				return fmt.Errorf("This record (%v) has no sale budget", sale.GetInstanceId())
+				return status.Errorf(codes.FailedPrecondition, "This record (%v) has no sale budget", sale.GetInstanceId())
 			}
 
 			if !rec.GetMetadata().SaleDirty {
