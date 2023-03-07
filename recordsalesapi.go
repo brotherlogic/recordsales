@@ -67,7 +67,7 @@ func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest)
 		return nil, err
 	}
 
-	conn, err := s.FDialServer(ctx, "queue")
+	/*conn, err := s.FDialServer(ctx, "queue")
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (s *Server) ClientUpdate(ctx context.Context, in *pbrc.ClientUpdateRequest)
 		Payload:       &google_protobuf.Any{Value: data},
 		Key:           fmt.Sprintf("%v", rec.GetRelease().GetId()),
 		RequireUnique: true,
-	})
+	})*/
 
 	return &pbrc.ClientUpdateResponse{}, err
 }

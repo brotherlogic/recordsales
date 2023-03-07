@@ -113,7 +113,7 @@ func (s *Server) syncSales(ctx context.Context, rec *pbrc.Record) error {
 					config.Archives = append(config.Archives, oldSale)
 				}
 				s.CtxLog(ctx, fmt.Sprintf("NEWPRICE %v -> %v, %v", rec.GetRelease().GetInstanceId(), rec.GetMetadata().GetSalePrice(), rec.GetMetadata().GetCurrentSalePrice()))
-				sale.Price = rec.GetMetadata().SalePrice
+				sale.Price = rec.GetMetadata().CurrentSalePrice
 				if sale.Price == 0 {
 					sale.Price = rec.GetMetadata().GetCurrentSalePrice()
 				}
