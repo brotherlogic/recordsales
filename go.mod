@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/brotherlogic/buildserver v0.0.0-20230410215435-15c7e2b3f7be // indirect
 	github.com/brotherlogic/discovery v0.0.0-20230314231148-be93dd1fea01
+	github.com/brotherlogic/githubcard v0.0.0-20230412001612-dd586ba8e890 // indirect
 	github.com/brotherlogic/godiscogs v0.0.0-20230401025107-56c4acd43937
 	github.com/brotherlogic/goserver v0.0.0-20230330215506-65bad61eb180
 	github.com/brotherlogic/keystore v0.0.0-20230409183002-38ac9ff928ef
