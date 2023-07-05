@@ -3,14 +3,14 @@ module github.com/brotherlogic/recordsales
 go 1.16
 
 require (
-	github.com/brotherlogic/datastore v0.0.0-20230628035726-1293e88843f9 // indirect
+	github.com/brotherlogic/datastore v0.0.0-20230705044620-9d1a3dd139e2 // indirect
 	github.com/brotherlogic/discovery v0.0.0-20230527174721-899846f80b8c
-	github.com/brotherlogic/githubcard v0.0.0-20230628035800-2b0b395c535e // indirect
+	github.com/brotherlogic/githubcard v0.0.0-20230705044623-f92f4f39baa5 // indirect
 	github.com/brotherlogic/godiscogs v0.0.0-20230530030232-e7e2f67fbe33
 	github.com/brotherlogic/goserver v0.0.0-20230619155835-969c746dba11
 	github.com/brotherlogic/keystore v0.0.0-20230605062808-e90788956f75
-	github.com/brotherlogic/queue v0.0.0-20230622062152-7ad82d9d0cc8
-	github.com/brotherlogic/recordcollection v0.0.0-20230623205341-4ef17c02a0c3
+	github.com/brotherlogic/queue v0.0.0-20230629071526-5db7d839f6a7
+	github.com/brotherlogic/recordcollection v0.0.0-20230629015007-cd0a1f9875b8
 	github.com/golang/protobuf v1.5.3
 	github.com/prometheus/client_golang v1.16.0
 	golang.org/x/net v0.11.0
