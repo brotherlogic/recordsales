@@ -3,8 +3,8 @@ module github.com/brotherlogic/recordsales
 go 1.16
 
 require (
+	github.com/brotherlogic/datastore v0.0.0-20230809074622-972d5abee332 // indirect
 	github.com/brotherlogic/discovery v0.0.0-20230805173434-00271107b19e
-	github.com/brotherlogic/githubcard v0.0.0-20230809064540-6c0e36ac6ad3 // indirect
 	github.com/brotherlogic/godiscogs v0.0.0-20230805165245-52eed80e4165
 	github.com/brotherlogic/goserver v0.0.0-20230726200050-779ae6811580
 	github.com/brotherlogic/keystore v0.0.0-20230804194656-c684af493a70
