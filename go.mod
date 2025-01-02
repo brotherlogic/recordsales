@@ -7,7 +7,7 @@ require (
 	github.com/brotherlogic/godiscogs v0.0.0-20240823195726-9a8d322e6898
 	github.com/brotherlogic/goserver v0.0.0-20240826215223-fccbac46b3d4
 	github.com/brotherlogic/keystore v0.0.0-20240508161349-814b3200b126
-	github.com/brotherlogic/queue v0.0.0-20250102200849-5d51f8caa9ab
+	github.com/brotherlogic/queue v0.0.0-20250102203553-2e81b0ed1ac5
 	github.com/brotherlogic/recordcollection v0.0.0-20250102190326-261562827e18
 	github.com/golang/protobuf v1.5.4
 	github.com/prometheus/client_golang v1.20.5
@@ -21,7 +21,7 @@ require (
 	github.com/brotherlogic/buildserver v0.0.0-20250102194426-8bfd26943886 // indirect
 	github.com/brotherlogic/datastore v0.0.0-20250102195318-271a5f66c743 // indirect
 	github.com/brotherlogic/dstore v0.0.0-20250102200438-7aa2ed930fac // indirect
-	github.com/brotherlogic/githubcard v0.0.0-20250102200507-0bd677d627b6 // indirect
+	github.com/brotherlogic/githubcard v0.0.0-20250102203640-ddd13f5bc65c // indirect
 	github.com/brotherlogic/githubridge v0.2824.0 // indirect
 	github.com/brotherlogic/gobuildslave v0.0.0-20241111085829-8d4e5069a7fd // indirect
 	github.com/brotherlogic/lock v0.0.0-20250102200742-c84bd1087b19 // indirect
