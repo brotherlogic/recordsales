@@ -18,14 +18,14 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/brotherlogic/buildserver v0.0.0-20250320221252-546487c5a7cd // indirect
+	github.com/brotherlogic/buildserver v0.0.0-20250321001450-6ba0a3c72aa2 // indirect
 	github.com/brotherlogic/datastore v0.0.0-20250313015544-917b63bdd6ff // indirect
-	github.com/brotherlogic/dstore v0.0.0-20250320225944-97f36e45ba6f // indirect
-	github.com/brotherlogic/githubcard v0.0.0-20250320220918-edfaf0bbcc34 // indirect
+	github.com/brotherlogic/dstore v0.0.0-20250321005947-d23af0001095 // indirect
+	github.com/brotherlogic/githubcard v0.0.0-20250321001100-db781a2b2a5b // indirect
 	github.com/brotherlogic/githubridge v0.2852.0 // indirect
-	github.com/brotherlogic/gobuildslave v0.0.0-20250320230028-ce4825e75e12 // indirect
-	github.com/brotherlogic/lock v0.0.0-20250320230759-b989b30853f6 // indirect
-	github.com/brotherlogic/logging v0.0.0-20250320230354-90019d70e437 // indirect
+	github.com/brotherlogic/gobuildslave v0.0.0-20250321010251-a99db9bc40b0 // indirect
+	github.com/brotherlogic/lock v0.0.0-20250321001508-5d495b93f671 // indirect
+	github.com/brotherlogic/logging v0.0.0-20250321005939-9ab9a30c8215 // indirect
 	github.com/brotherlogic/monitor v0.0.0-20221025152653-c10877c5f9e6 // indirect
 	github.com/brotherlogic/versionserver v0.0.0-20221025154054-c9bcd41be2f2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
